@@ -4,10 +4,10 @@
 import type { TransactionWithCustomer } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
-import { formatDistanceToNow } from 'date-fns';
 import { User, CreditCard, Coins, Landmark } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "../ui/button";
+import { ClientRelativeTime } from "../common/ClientRelativeTime";
 
 type RecentTransactionsProps = {
     transactions: TransactionWithCustomer[];
@@ -58,9 +58,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                                             </Link>
                                         </Button>
                                     </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(new Date(tx.date), { addSuffix: true })}
-                                    </p>
+                                    <ClientRelativeTime date={tx.date} />
                                 </div>
                             </div>
                             <div className="text-right">
