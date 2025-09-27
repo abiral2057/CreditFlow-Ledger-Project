@@ -87,7 +87,9 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const parentId = tx.jet_rel?.['parent-22']?.[0]?.id;
+      // Find the jet_rel key that starts with 'parent-'
+      const jetRelKey = Object.keys(tx.jet_rel || {}).find(key => key.startsWith('parent-'));
+      const parentId = jetRelKey ? tx.jet_rel?.[jetRelKey]?.[0]?.id : undefined;
       const customer = parentId ? customerMap.get(parentId) : null;
       
       return {
@@ -95,7 +97,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
         customer: customer || null,
       };
     })
-    .filter(tx => tx.customer !== null); // Optional: filter out transactions without a customer
+    .filter(tx => tx.customer !== null);
 
   return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -207,6 +209,7 @@ export const createTransaction = async (data: { customerId: number; date: string
   if (!relationResponse.ok) {
     const error = await relationResponse.json();
     console.error('Failed to create transaction relationship:', error);
+    // If linking fails, we should delete the orphaned transaction
     await deleteTransaction(newTransaction.id);
     throw new Error(error.message || 'Failed to create transaction relationship');
   }
@@ -215,7 +218,7 @@ export const createTransaction = async (data: { customerId: number; date: string
 };
 
 export const deleteTransaction = async (transactionId: number) => {
-    const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
+    const response = await fetch(`${WPAPI_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,
     });
