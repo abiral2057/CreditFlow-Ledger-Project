@@ -15,12 +15,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { WalletCards, Chrome } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required.'),
@@ -28,8 +24,6 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,71 +35,13 @@ export default function LoginPage() {
   const { isSubmitting } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
-          cache: 'no-store',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast({
-          title: 'Login Successful',
-          description: `Welcome back, ${result.username}!`,
-        });
-        window.location.href = '/';
-      } else {
-        throw new Error(result.error || 'Login failed. Please check your credentials.');
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Error',
-        description: (error as Error).message,
-      });
-    }
+    // This is now a no-op since login is bypassed.
+    console.log('Login attempt blocked as login is bypassed.');
   }
 
   async function handleGoogleSignIn() {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      if (user) {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            isGoogle: true,
-            username: user.displayName || 'Google User',
-            email: user.email || '',
-          }),
-          cache: 'no-store',
-        });
-
-        const res = await response.json();
-
-        if (res.success) {
-          toast({
-            title: 'Login Successful',
-            description: `Welcome, ${user.displayName}!`,
-          });
-          window.location.href = '/';
-        } else {
-          throw new Error(res.error || 'Google Sign-In failed.');
-        }
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Google Sign-In Error',
-        description: (error as Error).message,
-      });
-    }
+    // This is now a no-op since login is bypassed.
+    console.log('Google Sign-In attempt blocked as login is bypassed.');
   }
 
   return (
@@ -116,8 +52,8 @@ export default function LoginPage() {
             <WalletCards className="h-8 w-8 text-accent" />
             <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
           </div>
-          <CardTitle className="text-2xl">Login to your account</CardTitle>
-          <CardDescription>Enter your username and password to continue.</CardDescription>
+          <CardTitle className="text-2xl">Login Disabled</CardTitle>
+          <CardDescription>Authentication is currently bypassed. Refresh to access the app.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -129,7 +65,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="your_username" {...field} />
+                      <Input placeholder="your_username" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,21 +78,21 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Logging in...' : 'Login'}
+              <Button type="submit" className="w-full" disabled={true}>
+                Login
               </Button>
             </form>
           </Form>
 
           <Separator className="my-6" />
 
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={true}>
             <Chrome className="mr-2 h-4 w-4" />
             Continue with Google
           </Button>

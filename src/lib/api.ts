@@ -6,8 +6,8 @@ import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
 
-const WP_API_URL_BASE = process.env.NEXT_PUBLIC_WP_API_URL || 'https://demo.leafletdigital.com.np/wp-json';
-const WP_API_URL = `${WP_API_URL_BASE}/wp/v2`;
+const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
+
 
 async function getHeaders() {
     const headers: HeadersInit = {
