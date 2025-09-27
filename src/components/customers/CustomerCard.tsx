@@ -52,7 +52,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
         <CardContent className="flex-grow flex flex-col justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <Phone className="h-4 w-4" />
-                <span>{customer.meta.phone_number || 'No phone number'}</span>
+                <span>{customer.meta.phone || 'No phone number'}</span>
             </div>
             <div className="text-right mt-4">
                 <Button asChild variant="ghost" size="sm" className="text-accent group-hover:bg-accent/10">

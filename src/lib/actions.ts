@@ -11,14 +11,13 @@ import {
   getAllCustomers
 } from './api';
 
-export async function createCustomer(data: { name: string; phone_number?: string; credit_limit: string; }) {
+export async function createCustomer(data: { name: string; phone?: string; credit_limit: string; }) {
   try {
-    // Fetch all customers to determine the next ID
     const allCustomers = await getAllCustomers();
-    const nextId = allCustomers.length + 1;
+    const nextId = (allCustomers.length > 0 ? Math.max(...allCustomers.map(c => parseInt(c.meta.customer_code.split('-')[1]) || 0)) : 0) + 1;
     const customer_code = `CUST-${String(nextId).padStart(3, '0')}`;
 
-    const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone_number: data.phone_number || '' });
+    const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone: data.phone || '' });
     revalidateTag('customers');
     return newCustomer;
   } catch (error) {
@@ -27,7 +26,7 @@ export async function createCustomer(data: { name: string; phone_number?: string
   }
 }
 
-export async function updateCustomer(id: number, data: Partial<{ name: string; customer_code: string; phone_number: string; credit_limit: string; }>) {
+export async function updateCustomer(id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) {
   try {
     const updatedCustomer = await apiUpdateCustomer(id, data);
     revalidateTag('customers');
@@ -53,7 +52,6 @@ export async function deleteCustomer(id: number) {
 export async function createTransaction(data: { customerId: number, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
     try {
       const newTransaction = await apiCreateTransaction(data);
-      // Revalidate both the specific customer's transaction list and the global list
       revalidateTag(`transactions:${data.customerId}`);
       revalidateTag('transactions');
       revalidatePath(`/customers/${data.customerId}`);

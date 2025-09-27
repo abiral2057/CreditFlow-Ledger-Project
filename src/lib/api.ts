@@ -17,7 +17,6 @@ const headers = {
 
 // Helper function to extract customer ID from transaction title
 const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
-    // Assuming title is like "Transaction for customer 862 - 100"
     const match = transaction.title.rendered.match(/for customer (\d+)/);
     return match ? match[1] : null;
 }
@@ -32,7 +31,11 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
     throw new Error('Failed to fetch customers');
   }
   const customers = await response.json();
-  return customers;
+  return customers.sort((a: Customer, b: Customer) => {
+    const codeA = parseInt(a.meta.customer_code.split('-')[1] || '0');
+    const codeB = parseInt(b.meta.customer_code.split('-')[1] || '0');
+    return codeA - codeB;
+  });
 }, ['customers'], { tags: ['customers'] });
 
 export const getCustomerById = cache(async (id: string): Promise<Customer> => {
@@ -109,7 +112,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 };
 
 
-export const createCustomer = async (data: { name: string; customer_code: string; phone_number: string; credit_limit: string; }) => {
+export const createCustomer = async (data: { name: string; customer_code: string; phone: string; credit_limit: string; }) => {
   const response = await fetch(`${WP_API_URL}/customers`, {
     method: 'POST',
     headers,
@@ -119,7 +122,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
       meta: {
         name: data.name,
         customer_code: data.customer_code,
-        phone_number: data.phone_number,
+        phone: data.phone,
         credit_limit: data.credit_limit,
       },
     }),
@@ -134,7 +137,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
   return response.json();
 };
 
-export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone_number: string; credit_limit: string; }>) => {
+export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
   const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
@@ -143,7 +146,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
       meta: {
         name: data.name,
         customer_code: data.customer_code,
-        phone_number: data.phone_number,
+        phone: data.phone,
         credit_limit: data.credit_limit,
       },
     }),

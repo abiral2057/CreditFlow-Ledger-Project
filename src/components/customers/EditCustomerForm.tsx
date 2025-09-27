@@ -32,7 +32,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   customer_code: z.string().min(1, 'Customer code is required.'),
-  phone_number: z.string().optional(),
+  phone: z.string().optional(),
   credit_limit: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount'),
 });
 
@@ -49,7 +49,7 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
     defaultValues: {
       name: customer.meta.name || '',
       customer_code: customer.meta.customer_code || '',
-      phone_number: customer.meta.phone_number || '',
+      phone: customer.meta.phone || '',
       credit_limit: customer.meta.credit_limit || '0',
     },
   });
@@ -117,7 +117,7 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
             />
             <FormField
               control={form.control}
-              name="phone_number"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone Number (Optional)</FormLabel>

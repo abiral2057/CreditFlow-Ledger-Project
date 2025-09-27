@@ -8,7 +8,7 @@ export interface Customer {
   meta: {
     customer_code: string;
     name: string;
-    phone_number: string;
+    phone: string;
     credit_limit: string;
     notes: string;
   };

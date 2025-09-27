@@ -31,7 +31,7 @@ import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  phone_number: z.string().optional(),
+  phone: z.string().optional(),
   credit_limit: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount'),
 });
 
@@ -44,7 +44,7 @@ export function CreateCustomerForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      phone_number: '',
+      phone: '',
       credit_limit: '0',
     },
   });
@@ -102,7 +102,7 @@ export function CreateCustomerForm() {
             />
             <FormField
               control={form.control}
-              name="phone_number"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone Number (Optional)</FormLabel>
