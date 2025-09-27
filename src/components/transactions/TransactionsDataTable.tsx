@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Transaction, Customer } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,13 +51,20 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
     const [isDeleting, setIsDeleting] = useState(false);
     const { toast } = useToast();
     const [currentPage, setCurrentPage] = useState(1);
-    const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: startOfMonth(new Date()),
-        to: new Date(),
-    });
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        // This ensures the date is only set on the client, preventing hydration mismatch
+        setDateRange({
+            from: startOfMonth(new Date()),
+            to: new Date(),
+        });
+        setIsClient(true);
+    }, []);
 
     const filteredTransactions = useMemo(() => {
-        if (!dateRange?.from) return transactions;
+        if (!dateRange?.from || !isClient) return transactions;
         return transactions.filter(tx => {
             const txDate = new Date(tx.date);
             const from = new Date(dateRange.from!);
@@ -67,7 +74,7 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
             
             return txDate >= from && txDate <= to;
         });
-    }, [transactions, dateRange]);
+    }, [transactions, dateRange, isClient]);
 
 
     const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
@@ -160,6 +167,10 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
     const isAllSelectedInPage = selectedRows.length > 0 && paginatedTransactions.every(tx => selectedRows.includes(tx.id));
     const isIndeterminate = selectedRows.length > 0 && !isAllSelectedInPage;
 
+    if (!isClient) {
+        // You can render a loading skeleton here to avoid the flash of unfiltered content
+        return null;
+    }
 
     return (
         <>
@@ -311,4 +322,5 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
         </AlertDialog>
         </>
     );
-}
+
+    
