@@ -82,7 +82,8 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
     const isAllSelected = selectedRows.length > 0 && selectedRows.length === transactions.length;
     const isIndeterminate = selectedRows.length > 0 && selectedRows.length < transactions.length;
 
-    const sortedTransactions = transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // The sorting is now done in the API layer, so we can just use the prop directly.
+    const sortedTransactions = transactions;
 
     return (
         <>
@@ -146,7 +147,7 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
                 ) : (
                 <TableRow>
                     <TableCell colSpan={6} className="text-center h-24">
-                    No transactions found for this customer.
+                        No transactions found for this customer.
                     </TableCell>
                 </TableRow>
                 )}

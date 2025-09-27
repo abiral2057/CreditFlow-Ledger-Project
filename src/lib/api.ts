@@ -56,7 +56,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     
     // Transform the response to match the Transaction type
     const transactions: Transaction[] = jetRelResponse
-      .filter(item => item.child_object) // Filter out items with no child_object
+      .filter(item => item && item.child_object && item.child_object.meta) // Ensure child_object and its meta exist
       .map(item => ({
         id: item.child_object.id,
         date: item.child_object.date,
@@ -64,10 +64,11 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
             transaction_type: item.child_object.meta.transaction_type,
             amount: item.child_object.meta.amount,
             payment_method: item.child_object.meta.payment_method,
-            related_customer: String(item.parent_id),
+            related_customer: String(item.parent_id), // Use parent_id as the related customer
             notes: item.child_object.meta.notes
         }
     }));
+    
     return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }, ['transactions-for-customer'], { tags: (customerId) => [`transactions:${customerId}`] });
 

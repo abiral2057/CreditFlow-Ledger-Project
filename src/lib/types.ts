@@ -20,7 +20,7 @@ export interface Transaction {
     transaction_type: 'Credit' | 'Debit';
     amount: string;
     payment_method: 'Cash' | 'Card' | 'Bank Transfer';
-    related_customer: string;
+    related_customer: string; // This is the parent customer ID
     notes: string;
   };
 }
@@ -33,14 +33,15 @@ export interface JetRelTransactionResponse {
   child_object: {
     id: number;
     date: string;
+    title: {
+      rendered: string;
+    };
     meta: {
       transaction_type: 'Credit' | 'Debit';
       amount: string;
       payment_method: 'Cash' | 'Card' | 'Bank Transfer';
       notes: string;
-    };
-    title: {
-      rendered: string;
+      // The related_customer is the parent_id from the top-level object
     };
     // ... other properties of the transaction object
   }
