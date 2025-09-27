@@ -17,13 +17,15 @@ export interface Customer {
 export interface Transaction {
   id: number;
   date: string;
+  title: {
+      rendered: string;
+  };
   meta: {
     transaction_type: 'Credit' | 'Debit';
     amount: string;
     payment_method: 'Cash' | 'Card' | 'Bank Transfer';
-    related_customer?: string; // This is the parent customer ID
     notes: string;
-    [key: string]: any; // Allow for dynamic parent keys like 'parent-22'
+    [key: string]: any; 
   };
 }
 

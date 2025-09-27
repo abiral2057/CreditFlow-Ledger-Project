@@ -15,18 +15,12 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// Helper function to find the parent customer ID from transaction meta
-const getParentCustomerId = (transaction: Transaction): string | null => {
-  for (const key in transaction.meta) {
-    if (key.startsWith("parent-")) {
-      // @ts-ignore
-      const parentId = transaction.meta[key];
-      // The parent ID might be an array or a single value
-      return Array.isArray(parentId) ? parentId[0] : parentId;
-    }
-  }
-  return null;
-};
+// Helper function to extract customer ID from transaction title
+const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
+    // Assuming title is like "Transaction for customer 862 - 100"
+    const match = transaction.title.rendered.match(/customer (\d+)/);
+    return match ? match[1] : null;
+}
 
 export const getAllCustomers = cache(async (): Promise<Customer[]> => {
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
@@ -72,8 +66,8 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     const allTransactions: Transaction[] = await response.json();
     
     const customerTransactions = allTransactions.filter(tx => {
-        const parentId = getParentCustomerId(tx);
-        return parentId === customerId;
+        const idFromTitle = getCustomerIdFromTitle(tx);
+        return idFromTitle === customerId;
     });
 
     // Sort transactions by date, most recent first
@@ -101,7 +95,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const parentId = getParentCustomerId(tx);
+      const parentId = getCustomerIdFromTitle(tx);
       const customer = parentId ? customerMap.get(parentId) : null;
       
       return {
@@ -182,8 +176,6 @@ export const deleteCustomer = async (id: number) => {
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   
-  const relationId = 22;
-
   const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -196,7 +188,6 @@ export const createTransaction = async (data: { customerId: number; date: string
         transaction_type: data.transaction_type,
         payment_method: data.payment_method,
         notes: data.notes || '',
-        [`parent-${relationId}`]: data.customerId
       },
     }),
   });
