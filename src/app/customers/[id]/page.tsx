@@ -8,6 +8,7 @@ import { ArrowLeft, User, Phone, CircleDollarSign, Hash, CreditCard, Landmark, C
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -112,7 +113,10 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             </Card>
         </div>
 
-        <h3 className="text-2xl font-headline font-bold mb-4 text-primary">Transaction History</h3>
+        <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-headline font-bold text-primary">Transaction History</h3>
+            <AddTransactionForm customerId={customer.id} />
+        </div>
         <Card className="shadow-sm">
           <Table>
             <TableHeader>

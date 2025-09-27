@@ -8,6 +8,7 @@ const PASSWORD = 'L30X mtkZ lpig SwO8 L8gP xcLc';
 
 const headers = {
   'Authorization': 'Basic ' + Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64'),
+  'Content-Type': 'application/json',
 };
 
 export const getAllCustomers = cache(async (): Promise<Customer[]> => {
@@ -52,3 +53,55 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     const transactions = await response.json();
     return transactions;
 });
+
+
+export const createCustomer = async (data: { name: string; customer_code: string; phone_number: string; credit_limit: string; }) => {
+  const response = await fetch(`${WP_API_URL}/customers`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      title: data.name,
+      status: 'publish',
+      meta: {
+        name: data.name,
+        customer_code: data.customer_code,
+        phone_number: data.phone_number,
+        credit_limit: data.credit_limit,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Failed to create customer:', error);
+    throw new Error(error.message || 'Failed to create customer');
+  }
+
+  return response.json();
+};
+
+export const createTransaction = async (data: { customerId: number, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
+  const response = await fetch(`${WP_API_URL}/transactions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      title: `Transaction for customer ${data.customerId}`,
+      status: 'publish',
+      meta: {
+        related_customer: [data.customerId],
+        amount: data.amount,
+        transaction_type: data.transaction_type,
+        payment_method: data.payment_method,
+        notes: data.notes || '',
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Failed to create transaction:', error);
+    throw new Error(error.message || 'Failed to create transaction');
+  }
+
+  return response.json();
+};
