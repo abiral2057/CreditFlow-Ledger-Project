@@ -55,7 +55,9 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     const jetRelResponse: JetRelTransactionResponse[] = await response.json();
     
     // Transform the response to match the Transaction type
-    const transactions: Transaction[] = jetRelResponse.map(item => ({
+    const transactions: Transaction[] = jetRelResponse
+      .filter(item => item.child_object) // Filter out items with no child_object
+      .map(item => ({
         id: item.child_object.id,
         date: item.child_object.date,
         meta: {
