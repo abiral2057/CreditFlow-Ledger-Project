@@ -42,7 +42,7 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { tags: (id) => [`customer:${id}`] });
+}, ['customer-by-id'], { tags: (id: string) => [`customer:${id}`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
     const url = `${JET_REL_API_URL}/children/${customerId}?per_page=100`;
@@ -68,13 +68,13 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     }));
     
     return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}, ['transactions-for-customer'], { tags: (customerId) => [`transactions:${customerId}`] });
+}, ['transactions-for-customer'], { tags: (customerId: string) => [`transactions:${customerId}`] });
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
   const [customers, transactionsResponse] = await Promise.all([
     getAllCustomers(),
-    fetch(`${WP_API_URL}/transactions?per_page=100&_embed`, { headers }),
+    fetch(`${WP_API_URL}/transactions?per_page=100`, { headers }),
   ]);
 
   if (!transactionsResponse.ok) {
@@ -83,13 +83,21 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   }
 
   const allTransactions: Transaction[] = await transactionsResponse.json();
-  const customerMap = new Map(customers.map(c => [c.id, c]));
+  const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
+
+  const getParentCustomerId = (transaction: Transaction): string | null => {
+    for (const key in transaction.meta) {
+      if (key.startsWith("parent-")) {
+        // @ts-ignore
+        return transaction.meta[key];
+      }
+    }
+    return null;
+  };
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // Find the jet_rel key that starts with 'parent-'
-      const jetRelKey = Object.keys(tx.jet_rel || {}).find(key => key.startsWith('parent-'));
-      const parentId = jetRelKey ? tx.jet_rel?.[jetRelKey]?.[0]?.id : undefined;
+      const parentId = getParentCustomerId(tx);
       const customer = parentId ? customerMap.get(parentId) : null;
       
       return {

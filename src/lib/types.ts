@@ -23,10 +23,8 @@ export interface Transaction {
     payment_method: 'Cash' | 'Card' | 'Bank Transfer';
     related_customer?: string; // This is the parent customer ID
     notes: string;
+    [key: string]: any; // Allow for dynamic parent keys like 'parent-22'
   };
-  jet_rel?: {
-    [key: string]: { id: number }[];
-  }
 }
 
 export interface TransactionWithCustomer extends Transaction {
