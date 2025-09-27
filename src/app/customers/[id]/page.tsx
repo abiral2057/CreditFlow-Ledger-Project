@@ -60,7 +60,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                 </CardTitle>
                 <CardDescription>Ledger details and transaction history.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Hash className="h-4 w-4" />
                     <strong>Code:</strong> <span className="text-foreground">{customer.meta.customer_code}</span>
@@ -76,7 +76,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             </CardContent>
         </Card>
         
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
@@ -106,12 +106,12 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             </Card>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
             <h3 className="text-2xl font-headline font-bold text-primary">Transaction History</h3>
             <AddTransactionForm customerId={customer.id} />
         </div>
         <Card className="shadow-sm">
-          <TransactionsDataTable transactions={transactions} customerId={id} />
+          <TransactionsDataTable transactions={transactions} customerId={id} customer={customer} />
         </Card>
       </main>
     </div>

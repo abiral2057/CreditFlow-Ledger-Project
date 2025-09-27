@@ -2,14 +2,14 @@
 'use client'
 
 import { useState, useMemo } from 'react';
-import type { Transaction } from "@/lib/types";
+import type { Transaction, Customer } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +27,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { format, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 
 type TransactionsDataTableProps = {
     transactions: Transaction[];
     customerId: string;
+    customer: Customer;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -42,7 +45,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
 };
 
-export function TransactionsDataTable({ transactions, customerId }: TransactionsDataTableProps) {
+export function TransactionsDataTable({ transactions, customerId, customer }: TransactionsDataTableProps) {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -110,6 +113,49 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
         }
       };
 
+    const handleDownloadPdf = () => {
+        const doc = new jsPDF();
+        
+        const totalCredit = filteredTransactions
+            .filter(t => t.meta.transaction_type === 'Credit')
+            .reduce((sum, t) => sum + parseFloat(t.meta.amount || '0'), 0);
+        const totalDebit = filteredTransactions
+            .filter(t => t.meta.transaction_type === 'Debit')
+            .reduce((sum, t) => sum + parseFloat(t.meta.amount || '0'), 0);
+        const balance = totalCredit - totalDebit;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text('Transaction Ledger', 14, 22);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text(`Customer: ${customer.meta.name}`, 14, 32);
+        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : ''} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 38);
+        
+        (doc as any).autoTable({
+            startY: 45,
+            head: [['Date', 'Type', 'Method', 'Amount']],
+            body: filteredTransactions.map(tx => [
+                new Date(tx.date).toLocaleDateString(),
+                tx.meta.transaction_type,
+                tx.meta.payment_method,
+                formatAmount(tx.meta.amount)
+            ]),
+            theme: 'striped',
+            headStyles: { fillColor: [34, 49, 63] },
+        });
+
+        const finalY = (doc as any).lastAutoTable.finalY;
+        doc.setFontSize(10);
+        doc.text(`Total Credit: ${formatAmount(totalCredit)}`, 14, finalY + 10);
+        doc.text(`Total Debit: ${formatAmount(totalDebit)}`, 14, finalY + 15);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Balance: ${formatAmount(balance)}`, 14, finalY + 20);
+
+        doc.save(`Ledger_${customer.meta.name.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
 
     const isAllSelectedInPage = selectedRows.length > 0 && paginatedTransactions.every(tx => selectedRows.includes(tx.id));
     const isIndeterminate = selectedRows.length > 0 && !isAllSelectedInPage;
@@ -117,8 +163,8 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
 
     return (
         <>
-        <div className="flex items-center justify-between p-4">
-            <div>
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
                  <Popover>
                     <PopoverTrigger asChild>
                     <Button
@@ -155,74 +201,82 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
                     />
                     </PopoverContent>
                 </Popover>
+                <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Download PDF
+                </Button>
             </div>
             {selectedRows.length > 0 && (
-                <div className="bg-muted/50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
                     <div className="text-sm text-muted-foreground">
-                        {selectedRows.length} row(s) selected.
+                        {selectedRows.length} selected
                     </div>
                     <Button variant="destructive" size="sm" onClick={() => setIsBulkDeleteConfirmOpen(true)}>
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Selected
+                        Delete
                     </Button>
                 </div>
             )}
         </div>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead className="w-[50px]">
-                    <Checkbox 
-                        checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="Select all rows on this page"
-                    />
-                </TableHead>
-                <TableHead className="w-[120px]">Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Payment Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="w-[50px] text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {paginatedTransactions.length > 0 ? (
-                paginatedTransactions.map(tx => (
-                    <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"}>
-                        <TableCell>
-                            <Checkbox 
-                                checked={selectedRows.includes(tx.id)}
-                                onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
-                                aria-label={`Select row ${tx.id}`}
-                            />
-                        </TableCell>
-                        <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                            <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'}>
-                            {tx.meta.transaction_type}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="flex items-center gap-2">
-                            {paymentMethodIcons[tx.meta.payment_method] || null}
-                            {tx.meta.payment_method}
-                        </TableCell>
-                        <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
-                            {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                            <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
-                        </TableCell>
-                    </TableRow>
-                ))
-                ) : (
-                <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
-                        No transactions found for the selected date range.
-                    </TableCell>
-                </TableRow>
-                )}
-            </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table>
+              <TableHeader>
+                  <TableRow>
+                  <TableHead className="w-[50px] px-2">
+                      <Checkbox 
+                          checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
+                          onCheckedChange={handleSelectAll}
+                          aria-label="Select all rows on this page"
+                      />
+                  </TableHead>
+                  <TableHead className="w-[120px]">Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="hidden sm:table-cell">Payment Method</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="w-[50px] text-right">Actions</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {paginatedTransactions.length > 0 ? (
+                  paginatedTransactions.map(tx => (
+                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"}>
+                          <TableCell className="px-2">
+                              <Checkbox 
+                                  checked={selectedRows.includes(tx.id)}
+                                  onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
+                                  aria-label={`Select row ${tx.id}`}
+                              />
+                          </TableCell>
+                          <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'}>
+                              {tx.meta.transaction_type}
+                              </Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                              <div className="flex items-center gap-2">
+                                {paymentMethodIcons[tx.meta.payment_method] || null}
+                                {tx.meta.payment_method}
+                              </div>
+                          </TableCell>
+                          <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
+                              {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                              <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                          </TableCell>
+                      </TableRow>
+                  ))
+                  ) : (
+                  <TableRow>
+                      <TableCell colSpan={6} className="text-center h-24">
+                          No transactions found for the selected date range.
+                      </TableCell>
+                  </TableRow>
+                  )}
+              </TableBody>
+          </Table>
+        </div>
         <div className="flex items-center justify-between p-4">
             <div className="text-sm text-muted-foreground">
                 Showing {paginatedTransactions.length > 0 ? ((currentPage -1) * ITEMS_PER_PAGE) + 1 : 0} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transaction(s).

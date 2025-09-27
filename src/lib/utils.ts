@@ -7,9 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatAmount(amount: number | string) {
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(numericAmount)) return '0.00';
-  return numericAmount.toLocaleString('en-US', {
+  if (isNaN(numericAmount)) return 'रु0.00';
+  const formatted = numericAmount.toLocaleString('en-IN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+  return `रु${formatted}`;
 }
