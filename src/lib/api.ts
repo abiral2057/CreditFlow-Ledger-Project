@@ -9,13 +9,9 @@ import { unstable_cache as cache, revalidateTag } from 'next/cache';
 const WP_API_URL_BASE = process.env.NEXT_PUBLIC_WP_API_URL || 'https://demo.leafletdigital.com.np/wp-json';
 const WP_API_URL = `${WP_API_URL_BASE}/wp/v2`;
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password';
-
 async function getHeaders() {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`)
     };
     return headers;
 }
