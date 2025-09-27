@@ -40,7 +40,7 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { tags: [`customer:${id}`] });
+}, ['customer-by-id'], { tags: (id) => [`customer:${id}`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
     const url = `${JET_REL_API_URL}/children/${customerId}?per_page=100`;
@@ -67,7 +67,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
         }
     }));
     return transactions;
-}, ['transactions-for-customer'], { tags: [`transactions`] });
+}, ['transactions-for-customer'], { tags: (customerId) => [`transactions:${customerId}`] });
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone_number: string; credit_limit: string; }) => {
