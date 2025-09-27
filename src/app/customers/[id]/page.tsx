@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatAmount } from "@/lib/utils";
-import { ArrowLeft, User, Phone, CircleDollarSign, Hash, CreditCard, Landmark, Coins, ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowLeft, User, Phone, CircleDollarSign, Hash, CreditCard, Landmark, Coins, ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
+import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -125,6 +126,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                 <TableHead>Type</TableHead>
                 <TableHead>Payment Method</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="w-[50px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -144,11 +146,14 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                     <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                       {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                     </TableCell>
+                    <TableCell className="text-right">
+                        <DeleteTransactionButton transactionId={tx.id} customerId={id} />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center h-24">
+                  <TableCell colSpan={5} className="text-center h-24">
                     No transactions found for this customer.
                   </TableCell>
                 </TableRow>

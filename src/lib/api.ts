@@ -105,3 +105,18 @@ export const createTransaction = async (data: { customerId: number, amount: stri
 
   return response.json();
 };
+
+export const deleteTransaction = async (transactionId: number) => {
+    const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
+        method: 'DELETE',
+        headers,
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error('Failed to delete transaction:', error);
+        throw new Error(error.message || 'Failed to delete transaction.');
+    }
+
+    return { success: true };
+}

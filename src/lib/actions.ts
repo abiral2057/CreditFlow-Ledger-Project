@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createCustomer as apiCreateCustomer, createTransaction as apiCreateTransaction } from './api';
+import { createCustomer as apiCreateCustomer, createTransaction as apiCreateTransaction, deleteTransaction as apiDeleteTransaction } from './api';
 
 export async function createCustomer(data: { name: string; customer_code: string; phone_number?: string; credit_limit: string; }) {
   try {
@@ -24,4 +24,15 @@ export async function createTransaction(data: { customerId: number, amount: stri
       console.error('Action Error: createTransaction', error);
       throw new Error((error as Error).message || 'Failed to create transaction.');
     }
-  }
+}
+
+export async function deleteTransaction(transactionId: number, customerId: string) {
+    try {
+        await apiDeleteTransaction(transactionId);
+        revalidatePath(`/customers/${customerId}`);
+        revalidatePath('/');
+    } catch (error) {
+        console.error('Action Error: deleteTransaction', error);
+        throw new Error((error as Error).message || 'Failed to delete transaction.');
+    }
+}
