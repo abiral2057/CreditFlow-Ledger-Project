@@ -4,6 +4,8 @@ import { CustomerCard } from "@/components/customers/CustomerCard";
 import type { Customer } from "@/lib/types";
 import { CreateCustomerForm } from "@/components/customers/CreateCustomerForm";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const customers: Customer[] = await getAllCustomers();
 
@@ -24,7 +26,7 @@ export default async function Home() {
         ) : (
           <div className="text-center py-12 text-muted-foreground rounded-lg border border-dashed">
             <p className="text-lg font-medium">No customers found.</p>
-            <p className="text-sm mt-2">Check your WordPress backend to make sure customers have been added.</p>
+            <p className="text-sm mt-2">Click "Create Customer" to add your first one.</p>
           </div>
         )}
       </main>

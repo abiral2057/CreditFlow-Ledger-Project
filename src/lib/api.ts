@@ -14,7 +14,7 @@ const headers = {
 export const getAllCustomers = cache(async (): Promise<Customer[]> => {
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
     headers,
-    next: { revalidate: 60 } // Revalidate every 60 seconds
+    next: { tags: ['customers'] }
   });
   if (!response.ok) {
     console.error('Failed to fetch customers:', await response.text());
@@ -27,7 +27,7 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
 export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
-    next: { revalidate: 60 }
+    next: { tags: [`customers:${id}`] }
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -44,7 +44,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     const url = `${WP_API_URL}/transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100`;
     const response = await fetch(url, { 
       headers,
-      next: { revalidate: 60 }
+      next: { tags: [`transactions:${customerId}`] }
     });
     if (!response.ok) {
       console.error('Failed to fetch transactions:', await response.text());
@@ -79,6 +79,45 @@ export const createCustomer = async (data: { name: string; customer_code: string
 
   return response.json();
 };
+
+export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone_number: string; credit_limit: string; }>) => {
+  const response = await fetch(`${WP_API_URL}/customers/${id}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      title: data.name,
+      meta: {
+        name: data.name,
+        customer_code: data.customer_code,
+        phone_number: data.phone_number,
+        credit_limit: data.credit_limit,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Failed to update customer:', error);
+    throw new Error(error.message || 'Failed to update customer');
+  }
+
+  return response.json();
+}
+
+export const deleteCustomer = async (id: number) => {
+    const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
+        method: 'DELETE',
+        headers,
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error('Failed to delete customer:', error);
+        throw new Error(error.message || 'Failed to delete customer.');
+    }
+
+    return { success: true };
+}
 
 export const createTransaction = async (data: { customerId: number, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   const response = await fetch(`${WP_API_URL}/transactions`, {

@@ -2,14 +2,12 @@ import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatAmount } from "@/lib/utils";
-import { ArrowLeft, User, Phone, CircleDollarSign, Hash, CreditCard, Landmark, Coins, ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { ArrowLeft, User, Phone, CircleDollarSign, Hash, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
-import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
+import { TransactionsDataTable } from "@/components/transactions/TransactionsDataTable";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -40,12 +38,6 @@ export default async function CustomerPage({ params }: { params: { id: string } 
     .reduce((sum, t) => sum + parseFloat(t.meta.amount || '0'), 0);
 
   const balance = totalCredit - totalDebit;
-
-  const paymentMethodIcons: Record<string, React.ReactNode> = {
-    'Cash': <Coins className="h-4 w-4 text-muted-foreground" />,
-    'Card': <CreditCard className="h-4 w-4 text-muted-foreground" />,
-    'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -119,47 +111,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             <AddTransactionForm customerId={customer.id} />
         </div>
         <Card className="shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Payment Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="w-[50px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.length > 0 ? (
-                transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(tx => (
-                  <TableRow key={tx.id}>
-                    <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'}>
-                        {tx.meta.transaction_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      {paymentMethodIcons[tx.meta.payment_method] || null}
-                      {tx.meta.payment_method}
-                    </TableCell>
-                    <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
-                      {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <DeleteTransactionButton transactionId={tx.id} customerId={id} />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">
-                    No transactions found for this customer.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <TransactionsDataTable transactions={transactions} customerId={id} />
         </Card>
       </main>
     </div>
