@@ -46,6 +46,7 @@ export default function LoginPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(values),
+          cache: 'no-store',
       });
 
       const result = await response.json();
@@ -83,6 +84,7 @@ export default function LoginPage() {
             username: user.displayName || 'Google User',
             email: user.email || '',
           }),
+          cache: 'no-store',
         });
 
         const res = await response.json();
