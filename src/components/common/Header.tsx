@@ -10,7 +10,7 @@ export function Header() {
   const pathname = usePathname();
   
   const navLinks = [
-    { href: '/', label: 'Customers', icon: Users },
+    { href: '/customers', label: 'Customers', icon: Users },
     { href: '/transactions', label: 'Transactions', icon: WalletCards },
   ]
 
@@ -24,7 +24,7 @@ export function Header() {
 
         <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => {
-                const isActive = (link.href === '/' && (pathname === '/' || pathname.startsWith('/customers'))) || (link.href !== '/' && pathname.startsWith(link.href));
+                const isActive = pathname.startsWith(link.href);
                 return (
                 <Link 
                     key={link.href}
