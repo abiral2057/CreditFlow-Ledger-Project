@@ -8,7 +8,8 @@ import {
   deleteCustomer as apiDeleteCustomer,
   createTransaction as apiCreateTransaction, 
   deleteTransaction as apiDeleteTransaction,
-  getAllCustomers
+  getAllCustomers,
+  getTransactionsForCustomer
 } from './api';
 
 export async function createCustomer(data: { name: string; phone?: string; credit_limit: string; }) {
@@ -40,11 +41,21 @@ export async function updateCustomer(id: number, data: Partial<{ name: string; c
 
 export async function deleteCustomer(id: number) {
     try {
+        // First, get all transactions for the customer
+        const transactions = await getTransactionsForCustomer(id.toString());
+
+        // Delete all associated transactions
+        await Promise.all(transactions.map(tx => apiDeleteTransaction(tx.id)));
+        
+        // Then, delete the customer
         await apiDeleteCustomer(id);
+
         revalidateTag('customers');
+        revalidateTag(`transactions:${id}`);
+        revalidateTag('transactions');
     } catch (error) {
         console.error('Action Error: deleteCustomer', error);
-        throw new Error((error as Error).message || 'Failed to delete customer.');
+        throw new Error((error as Error).message || 'Failed to delete customer and their transactions.');
     }
 }
 
@@ -88,3 +99,4 @@ export async function deleteMultipleTransactions(transactionIds: number[], custo
         throw new Error((error as Error).message || 'Failed to delete transactions.');
     }
 }
+
