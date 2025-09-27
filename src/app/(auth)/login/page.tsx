@@ -55,8 +55,7 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: `Welcome back, ${result.username}!`,
         });
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       } else {
         throw new Error(result.error || 'Login failed. Please check your credentials.');
       }
@@ -93,8 +92,7 @@ export default function LoginPage() {
             title: 'Login Successful',
             description: `Welcome, ${user.displayName}!`,
           });
-          router.push('/');
-          router.refresh();
+          window.location.href = '/';
         } else {
           throw new Error(res.error || 'Google Sign-In failed.');
         }
