@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { updateCustomer } from '@/lib/actions';
 import type { Customer } from '@/lib/types';
-import { Edit } from 'lucide-react';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -38,10 +38,9 @@ const formSchema = z.object({
 
 type EditCustomerFormProps = {
   customer: Customer;
-  children: React.ReactNode;
 }
 
-export function EditCustomerForm({ customer, children }: EditCustomerFormProps) {
+export function EditCustomerForm({ customer }: EditCustomerFormProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   
@@ -76,7 +75,11 @@ export function EditCustomerForm({ customer, children }: EditCustomerFormProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+          Edit
+        </DropdownMenuItem>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>

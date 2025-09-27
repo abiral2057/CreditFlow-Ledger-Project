@@ -1,4 +1,6 @@
 
+'use client';
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,17 +42,9 @@ export function CustomerCard({ customer }: CustomerCardProps) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <EditCustomerForm customer={customer}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        Edit
-                      </DropdownMenuItem>
-                    </EditCustomerForm>
+                    <EditCustomerForm customer={customer} />
                     <DropdownMenuSeparator />
-                    <DeleteCustomerButton customerId={customer.id}>
-                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                         Delete
-                       </DropdownMenuItem>
-                    </DeleteCustomerButton>
+                    <DeleteCustomerButton customerId={customer.id} />
                 </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -14,16 +14,15 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteCustomer } from '@/lib/actions';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type DeleteCustomerButtonProps = {
   customerId: number;
-  children: React.ReactNode;
 };
 
-export function DeleteCustomerButton({ customerId, children }: DeleteCustomerButtonProps) {
+export function DeleteCustomerButton({ customerId }: DeleteCustomerButtonProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -48,7 +47,9 @@ export function DeleteCustomerButton({ customerId, children }: DeleteCustomerBut
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        {children}
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+          Delete
+        </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
