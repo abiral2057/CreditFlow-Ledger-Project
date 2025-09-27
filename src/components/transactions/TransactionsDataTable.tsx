@@ -29,6 +29,7 @@ import { format, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 type TransactionsDataTableProps = {
