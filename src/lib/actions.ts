@@ -2,10 +2,6 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { sessionOptions } from './auth';
 import { 
   createCustomer as apiCreateCustomer, 
   updateCustomer as apiUpdateCustomer,
@@ -13,58 +9,8 @@ import {
   createTransaction as apiCreateTransaction, 
   deleteTransaction as apiDeleteTransaction,
   getAllCustomers,
-  getTransactionsForCustomer,
-  validateUser
+  getTransactionsForCustomer
 } from './api';
-
-export async function login(credentials: {username: string, password: string}): Promise<{success: boolean, error?: string, username?: string}> {
-  try {
-    const user = await validateUser(credentials.username, credentials.password);
-    
-    if (!user.token) {
-        throw new Error(user.message || 'Invalid credentials');
-    }
-
-    const session = await getIronSession(cookies(), sessionOptions);
-    session.isLoggedIn = true;
-    session.username = user.user_display_name;
-    session.token = user.token;
-    await session.save();
-
-    return { success: true, username: user.user_display_name };
-  } catch (error) {
-    console.error('Login Action Error:', error);
-    return { success: false, error: (error as Error).message };
-  }
-}
-
-export async function loginWithGoogle(userData: {username: string, email: string}): Promise<{success: boolean, error?: string}> {
-    const ADMIN_EMAIL = 'nepalhighlandtreks2080@gmail.com';
-
-    if (userData.email !== ADMIN_EMAIL) {
-        return { success: false, error: 'Unauthorized access. This account is not permitted.' };
-    }
-
-    try {
-        const session = await getIronSession(cookies(), sessionOptions);
-        session.isLoggedIn = true;
-        session.username = userData.username;
-        // No token for Google sign-in as it's handled differently
-        session.token = `google-user-${userData.email}`; 
-        await session.save();
-        return { success: true };
-    } catch (error) {
-        console.error('Google Login Action Error:', error);
-        return { success: false, error: (error as Error).message };
-    }
-}
-
-export async function logout() {
-  const session = await getIronSession(cookies(), sessionOptions);
-  session.destroy();
-  redirect('/login');
-}
-
 
 export async function createCustomer(data: { name: string; phone?: string; credit_limit: string; }) {
   try {

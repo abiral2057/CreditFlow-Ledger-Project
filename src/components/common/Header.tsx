@@ -1,15 +1,16 @@
 
 'use client';
 
-import { WalletCards, Users, LogIn, LogOut } from 'lucide-react';
+import { WalletCards, Users, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { logout } from '@/lib/actions';
 import { Button } from '../ui/button';
+import { useRouter } from 'next/navigation';
 
 export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean; username?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   
   const navLinks = [
     { href: '/customers', label: 'Customers', icon: Users },
@@ -17,8 +18,9 @@ export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean;
   ]
 
   const handleLogout = async () => {
-    await logout();
-    window.location.href = '/login';
+    await fetch('/api/logout');
+    router.push('/login');
+    router.refresh();
   };
 
   return (
@@ -56,7 +58,7 @@ export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean;
             {isLoggedIn ? (
                 <>
                   <div className='hidden sm:flex items-center gap-2 text-sm'>
-                    <User className='h-5 w-5 text-muted-foreground' />
+                    <UserIcon className='h-5 w-5 text-muted-foreground' />
                     <span className='font-medium text-muted-foreground'>{username}</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={handleLogout}>

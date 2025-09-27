@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { login, loginWithGoogle } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { WalletCards, Chrome } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -43,13 +42,21 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const result = await login(values);
+      const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
       if (result.success) {
         toast({
           title: 'Login Successful',
           description: `Welcome back, ${result.username}!`,
         });
         router.push('/');
+        router.refresh();
       } else {
         throw new Error(result.error || 'Login failed. Please check your credentials.');
       }
@@ -68,20 +75,28 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      if(user) {
-        const res = await loginWithGoogle({
+      if (user) {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isGoogle: true,
             username: user.displayName || 'Google User',
             email: user.email || '',
+          }),
         });
 
+        const res = await response.json();
+
         if (res.success) {
-            toast({
-              title: 'Login Successful',
-              description: `Welcome, ${user.displayName}!`,
-            });
-            router.push('/');
+          toast({
+            title: 'Login Successful',
+            description: `Welcome, ${user.displayName}!`,
+          });
+          router.push('/');
+          router.refresh();
         } else {
-            throw new Error(res.error || 'Google Sign-In failed.');
+          throw new Error(res.error || 'Google Sign-In failed.');
         }
       }
     } catch (error) {
@@ -97,10 +112,10 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-            <div className='flex justify-center items-center gap-3 text-primary mb-4'>
-                 <WalletCards className="h-8 w-8 text-accent" />
-                 <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
-            </div>
+          <div className="flex justify-center items-center gap-3 text-primary mb-4">
+            <WalletCards className="h-8 w-8 text-accent" />
+            <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
+          </div>
           <CardTitle className="text-2xl">Login to your account</CardTitle>
           <CardDescription>Enter your username and password to continue.</CardDescription>
         </CardHeader>
@@ -145,7 +160,6 @@ export default function LoginPage() {
             <Chrome className="mr-2 h-4 w-4" />
             Continue with Google
           </Button>
-
         </CardContent>
       </Card>
     </main>
