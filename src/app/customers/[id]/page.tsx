@@ -1,3 +1,4 @@
+
 import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,8 @@ export default async function CustomerPage({ params }: { params: { id: string } 
     <div className="flex flex-col min-h-screen">
       <Header />
       <SidebarInset>
-        <main className="flex-1 container mx-auto p-4 md:p-8 animate-in fade-in-0 duration-500">
+        <div className="container mx-auto">
+        <main className="flex-1 p-4 md:p-8 animate-in fade-in-0 duration-500">
           <div className="mb-6">
             <Button asChild variant="outline" size="sm">
               <Link href="/" className="flex items-center gap-2">
@@ -116,6 +118,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             <TransactionsDataTable transactions={transactions} customerId={id} customer={customer} />
           </Card>
         </main>
+        </div>
       </SidebarInset>
     </div>
   );

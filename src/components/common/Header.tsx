@@ -11,8 +11,8 @@ export function Header() {
   
   return (
     <>
-      <header className="bg-card border-b sticky top-0 z-40 shadow-sm md:z-50 md:pl-[--sidebar-width-icon] peer-data-[collapsible=icon]:md:pl-[--sidebar-width]">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+      <header className="bg-card border-b sticky top-0 z-40 shadow-sm md:z-50 md:pl-[calc(var(--sidebar-width-icon)_+_1rem)] peer-data-[collapsible=icon]:md:pl-[calc(var(--sidebar-width)_+_1rem)] transition-[padding] peer-data-[variant=inset]:hidden">
+        <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
             <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
