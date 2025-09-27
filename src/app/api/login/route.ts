@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (body.isGoogle) {
     // Handle Google Sign-In
     const { username, email } = body;
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'nepalhighlandtreks2080@gmail.com';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'abiral.shrestha72@gmail.com';
 
     if (email !== ADMIN_EMAIL) {
       return NextResponse.json({ success: false, error: 'Unauthorized access. This account is not permitted.' });
