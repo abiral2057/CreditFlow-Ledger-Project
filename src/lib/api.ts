@@ -1,8 +1,10 @@
+
 import 'server-only';
-import type { Customer, Transaction } from './types';
+import type { Customer, Transaction, JetRelTransactionResponse } from './types';
 import { unstable_cache as cache } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
+const JET_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/22';
 const USERNAME = 'admin';
 const PASSWORD = 'L30X mtkZ lpig SwO8 L8gP xcLc';
 
@@ -38,10 +40,10 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { tags: [`customer`] });
+}, ['customer-by-id'], { tags: [`customer:${id}`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
-    const url = `${WP_API_URL}/transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100`;
+    const url = `${JET_REL_API_URL}/children/${customerId}?per_page=100`;
     const response = await fetch(url, { 
       headers,
       next: { tags: [`transactions:${customerId}`] }
@@ -50,7 +52,20 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
       console.error('Failed to fetch transactions:', await response.text());
       throw new Error('Failed to fetch transactions');
     }
-    const transactions = await response.json();
+    const jetRelResponse: JetRelTransactionResponse[] = await response.json();
+    
+    // Transform the response to match the Transaction type
+    const transactions: Transaction[] = jetRelResponse.map(item => ({
+        id: item.child_object.id,
+        date: item.child_object.date,
+        meta: {
+            transaction_type: item.child_object.meta.transaction_type,
+            amount: item.child_object.meta.amount,
+            payment_method: item.child_object.meta.payment_method,
+            related_customer: String(item.parent_id),
+            notes: item.child_object.meta.notes
+        }
+    }));
     return transactions;
 }, ['transactions-for-customer'], { tags: [`transactions`] });
 
@@ -120,29 +135,52 @@ export const deleteCustomer = async (id: number) => {
 }
 
 export const createTransaction = async (data: { customerId: number, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
-  const response = await fetch(`${WP_API_URL}/transactions`, {
+  // Step 1: Create the transaction post
+  const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      title: `Transaction for customer ${data.customerId}`,
+      title: `Transaction for customer ${data.customerId} - ${data.amount}`,
       status: 'publish',
       meta: {
-        related_customer: String(data.customerId),
         amount: data.amount,
         transaction_type: data.transaction_type,
         payment_method: data.payment_method,
         notes: data.notes || '',
+        // We no longer need related_customer here as it's handled by jet-rel
       },
     }),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    console.error('Failed to create transaction:', error);
-    throw new Error(error.message || 'Failed to create transaction');
+  if (!transactionResponse.ok) {
+    const error = await transactionResponse.json();
+    console.error('Failed to create transaction post:', error);
+    throw new Error(error.message || 'Failed to create transaction post');
   }
 
-  return response.json();
+  const newTransaction = await transactionResponse.json();
+
+  // Step 2: Create the relationship
+  const relationResponse = await fetch(JET_REL_API_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      parent_id: data.customerId,
+      child_id: newTransaction.id,
+      context: 'parent',
+      store_items_type: 'update',
+      meta: {}
+    }),
+  });
+
+  if (!relationResponse.ok) {
+    // We should probably try to delete the transaction post if this fails
+    const error = await relationResponse.json();
+    console.error('Failed to create transaction relationship:', error);
+    throw new Error(error.message || 'Failed to create transaction relationship');
+  }
+
+  return newTransaction;
 };
 
 export const deleteTransaction = async (transactionId: number) => {
