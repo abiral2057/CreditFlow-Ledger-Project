@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -43,7 +44,7 @@ export async function deleteCustomer(id: number) {
 }
 
 
-export async function createTransaction(data: { customerId: number, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
+export async function createTransaction(data: { customerId: number, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
     try {
       const newTransaction = await apiCreateTransaction(data);
       revalidatePath(`/customers/${data.customerId}`);

@@ -68,7 +68,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
             notes: item.child_object.meta.notes
         }
     }));
-    return transactions;
+    return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }, ['transactions-for-customer'], { tags: (customerId) => [`transactions:${customerId}`] });
 
 
@@ -136,7 +136,7 @@ export const deleteCustomer = async (id: number) => {
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: number, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
+export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   // Step 1: Create the transaction post
   const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
@@ -144,6 +144,7 @@ export const createTransaction = async (data: { customerId: number, amount: stri
     body: JSON.stringify({
       title: `Transaction for customer ${data.customerId} - ${data.amount}`,
       status: 'publish',
+      date: data.date,
       meta: {
         amount: data.amount,
         transaction_type: data.transaction_type,
@@ -179,6 +180,7 @@ export const createTransaction = async (data: { customerId: number, amount: stri
     // We should probably try to delete the transaction post if this fails
     const error = await relationResponse.json();
     console.error('Failed to create transaction relationship:', error);
+    await deleteTransaction(newTransaction.id);
     throw new Error(error.message || 'Failed to create transaction relationship');
   }
 
