@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import 'server-only';
@@ -86,7 +87,9 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { tags: (id: string) => [`customer:${id}`] });
+}, ['customer-by-id'], { 
+    tags: (id) => id ? [`customer:${id}`] : [] 
+});
 
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
