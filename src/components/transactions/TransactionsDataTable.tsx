@@ -132,33 +132,69 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
         const balance = totalCredit - totalDebit;
         
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
+        doc.setFontSize(20);
         doc.text('Transaction Ledger', 14, 22);
 
-        doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         doc.text(`Customer: ${customer.meta.name}`, 14, 32);
-        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : ''} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 38);
+        doc.text(`Code: ${customer.meta.customer_code}`, 14, 38);
+        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : ''} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 44);
         
+        const tableData = filteredTransactions.map(tx => [
+            new Date(tx.date).toLocaleDateString(),
+            tx.meta.transaction_type,
+            tx.meta.payment_method,
+            `${tx.meta.transaction_type === 'Credit' ? '+' : '-'} ${formatAmount(tx.meta.amount)}`
+        ]);
+
         (doc as any).autoTable({
-            startY: 45,
+            startY: 55,
             head: [['Date', 'Type', 'Method', 'Amount']],
-            body: filteredTransactions.map(tx => [
-                new Date(tx.date).toLocaleDateString(),
-                tx.meta.transaction_type,
-                tx.meta.payment_method,
-                formatAmount(tx.meta.amount)
-            ]),
+            body: tableData,
             theme: 'striped',
             headStyles: { fillColor: [34, 49, 63] },
+            didDrawPage: (data: any) => {
+                // Footer
+                const pageCount = doc.getNumberOfPages();
+                doc.setFontSize(8);
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+            }
         });
 
-        const finalY = (doc as any).lastAutoTable.finalY;
+        const finalY = (doc as any).lastAutoTable.finalY || 70;
+        doc.setFontSize(12);
+
+        const summaryX = 140;
+        doc.text('Summary', summaryX, finalY + 10);
+        
         doc.setFontSize(10);
-        doc.text(`Total Credit: ${formatAmount(totalCredit)}`, 14, finalY + 10);
-        doc.text(`Total Debit: ${formatAmount(totalDebit)}`, 14, finalY + 15);
+        doc.setFont('helvetica', 'normal');
+        (doc as any).autoTable({
+            startY: finalY + 14,
+            body: [
+                ['Total Credit:', formatAmount(totalCredit)],
+                ['Total Debit:', formatAmount(totalDebit)],
+            ],
+            theme: 'plain',
+            tableWidth: 'wrap',
+            margin: { left: summaryX - 2 },
+            styles: { fontSize: 10, cellPadding: 1 },
+        });
+
+        const summaryFinalY = (doc as any).lastAutoTable.finalY;
         doc.setFont('helvetica', 'bold');
-        doc.text(`Balance: ${formatAmount(balance)}`, 14, finalY + 20);
+        (doc as any).autoTable({
+            startY: summaryFinalY + 1,
+             body: [
+                ['Current Balance:', formatAmount(balance)],
+            ],
+            theme: 'plain',
+            tableWidth: 'wrap',
+            margin: { left: summaryX - 2 },
+            styles: { fontSize: 11, cellPadding: 1 },
+        });
+
 
         doc.save(`Ledger_${customer.meta.name.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
     };
@@ -168,9 +204,18 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
     const isIndeterminate = selectedRows.length > 0 && !isAllSelectedInPage;
 
     if (!isClient) {
-        // You can render a loading skeleton here to avoid the flash of unfiltered content
-        return null;
+        // Render a skeleton or null to avoid hydration mismatch while server-rendering
+        return (
+            <div className="p-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                    <Skeleton className="h-10 w-full sm:w-[300px]" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
+                <Skeleton className="h-96 w-full" />
+            </div>
+        );
     }
+
 
     return (
         <>
@@ -182,7 +227,7 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                         id="date"
                         variant={"outline"}
                         className={cn(
-                        "w-[300px] justify-start text-left font-normal",
+                        "w-full sm:w-[300px] justify-start text-left font-normal",
                         !dateRange && "text-muted-foreground"
                         )}
                     >
@@ -324,3 +369,4 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
     );
 
     
+}
