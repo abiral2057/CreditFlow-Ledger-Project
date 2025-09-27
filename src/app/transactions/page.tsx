@@ -4,17 +4,13 @@ import { Header } from "@/components/common/Header";
 import { Card } from "@/components/ui/card";
 import { AllTransactionsDataTable } from "@/components/transactions/AllTransactionsDataTable";
 import type { TransactionWithCustomer } from "@/lib/types";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
-import { sessionOptions } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
 
 export default async function TransactionsPage() {
   const transactions: TransactionWithCustomer[] = await getAllTransactions();
-  const session = await getIronSession(cookies(), sessionOptions);
-  const isLoggedIn = session.isLoggedIn || false;
-  const username = session.username || 'User';
+  const isLoggedIn = true;
+  const username = 'Admin';
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">

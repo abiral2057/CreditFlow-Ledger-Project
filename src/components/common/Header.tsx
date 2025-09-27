@@ -18,9 +18,10 @@ export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean;
   ]
 
   const handleLogout = async () => {
-    await fetch('/api/logout');
-    router.push('/login');
-    router.refresh();
+    // This is disabled as login is bypassed.
+    // await fetch('/api/logout');
+    // router.push('/login');
+    // router.refresh();
   };
 
   return (
@@ -57,23 +58,12 @@ export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean;
         <div className='flex items-center gap-4'>
             {isLoggedIn ? (
                 <>
-                  <div className='hidden sm:flex items-center gap-2 text-sm'>
+                  <div className='flex items-center gap-2 text-sm'>
                     <UserIcon className='h-5 w-5 text-muted-foreground' />
                     <span className='font-medium text-muted-foreground'>{username}</span>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Log Out
-                  </Button>
                 </>
-            ) : (
-                <Button asChild variant="outline" size="sm">
-                    <Link href="/login">
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Login
-                    </Link>
-                </Button>
-            )}
+            ) : null }
         </div>
       </div>
     </header>

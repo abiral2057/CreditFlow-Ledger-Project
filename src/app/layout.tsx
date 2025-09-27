@@ -2,9 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { BottomNav } from '@/components/common/BottomNav';
-import { getIronSession } from 'iron-session';
-import { sessionOptions } from '@/lib/auth';
-import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'CreditFlow Ledger',
@@ -16,8 +13,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getIronSession(cookies(), sessionOptions);
-  const isLoggedIn = session.isLoggedIn || false;
+  const isLoggedIn = true;
 
   return (
     <html lang="en" suppressHydrationWarning>

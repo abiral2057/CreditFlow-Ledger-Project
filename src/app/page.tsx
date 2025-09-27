@@ -10,19 +10,14 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { TopCustomersChart } from "@/components/dashboard/TopCustomersChart";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { sessionOptions } from '@/lib/auth';
-
 
 type CustomerWithBalance = Customer & { balance: number };
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const session = await getIronSession(cookies(), sessionOptions);
-  const isLoggedIn = session.isLoggedIn || false;
-  const username = session.username || 'User';
+  const isLoggedIn = true;
+  const username = 'Admin';
 
   const [customers, allTransactions] = await Promise.all([
     getAllTransactions(),
