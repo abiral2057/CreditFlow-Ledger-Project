@@ -47,8 +47,11 @@ export async function deleteCustomer(id: number) {
 export async function createTransaction(data: { customerId: number, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
     try {
       const newTransaction = await apiCreateTransaction(data);
-      revalidatePath(`/customers/${data.customerId}`);
+      // Revalidate both the specific customer's transaction list and the global list
       revalidateTag(`transactions:${data.customerId}`);
+      revalidateTag('transactions');
+      revalidatePath(`/customers/${data.customerId}`);
+      revalidatePath('/transactions');
       return newTransaction;
     } catch (error) {
       console.error('Action Error: createTransaction', error);
@@ -59,8 +62,10 @@ export async function createTransaction(data: { customerId: number, date: string
 export async function deleteTransaction(transactionId: number, customerId: string) {
     try {
         await apiDeleteTransaction(transactionId);
-        revalidatePath(`/customers/${customerId}`);
         revalidateTag(`transactions:${customerId}`);
+        revalidateTag('transactions');
+        revalidatePath(`/customers/${customerId}`);
+        revalidatePath('/transactions');
     } catch (error) {
         console.error('Action Error: deleteTransaction', error);
         throw new Error((error as Error).message || 'Failed to delete transaction.');
@@ -70,8 +75,10 @@ export async function deleteTransaction(transactionId: number, customerId: strin
 export async function deleteMultipleTransactions(transactionIds: number[], customerId: string) {
     try {
         await Promise.all(transactionIds.map(id => apiDeleteTransaction(id)));
-        revalidatePath(`/customers/${customerId}`);
         revalidateTag(`transactions:${customerId}`);
+        revalidateTag('transactions');
+        revalidatePath(`/customers/${customerId}`);
+        revalidatePath('/transactions');
     } catch (error) {
         console.error('Action Error: deleteMultipleTransactions', error);
         throw new Error((error as Error).message || 'Failed to delete transactions.');

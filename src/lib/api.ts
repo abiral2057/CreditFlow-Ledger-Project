@@ -3,7 +3,7 @@
 
 import 'server-only';
 import type { Customer, Transaction, JetRelTransactionResponse, TransactionWithCustomer } from './types';
-import { unstable_cache as cache } from 'next/cache';
+import { unstable_cache as cache, revalidateTag } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const JET_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/22';
@@ -13,6 +13,19 @@ const PASSWORD = 'L30X mtkZ lpig SwO8 L8gP xcLc';
 const headers = {
   'Authorization': 'Basic ' + Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64'),
   'Content-Type': 'application/json',
+};
+
+// Helper function to find the parent customer ID from transaction meta
+const getParentCustomerId = (transaction: Transaction): string | null => {
+  for (const key in transaction.meta) {
+    if (key.startsWith("parent-")) {
+      // @ts-ignore
+      const parentId = transaction.meta[key];
+      // The parent ID might be an array or a single value
+      return Array.isArray(parentId) ? parentId[0] : parentId;
+    }
+  }
+  return null;
 };
 
 export const getAllCustomers = cache(async (): Promise<Customer[]> => {
@@ -45,36 +58,35 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
 }, ['customer-by-id'], { tags: (id: string) => [`customer:${id}`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
-    const url = `${JET_REL_API_URL}/children/${customerId}?per_page=100`;
-    const response = await fetch(url, { 
-      headers,
-      next: { tags: [`transactions:${customerId}`] }
+    const allTransactionsUrl = `${WP_API_URL}/transactions?per_page=100`;
+    const response = await fetch(allTransactionsUrl, {
+        headers,
+        next: { tags: [`transactions`, `transactions:${customerId}`] }
     });
+
     if (!response.ok) {
-      console.error('Failed to fetch transactions:', await response.text());
-      throw new Error('Failed to fetch transactions');
+        console.error('Failed to fetch transactions:', await response.text());
+        throw new Error('Failed to fetch transactions');
     }
-    const jetRelResponse: JetRelTransactionResponse[] = await response.json();
+
+    const allTransactions: Transaction[] = await response.json();
     
-    const transactions: Transaction[] = jetRelResponse
-      .filter(item => item && item.child_object && item.child_object.meta)
-      .map(item => ({
-        id: item.child_object.id,
-        date: item.child_object.date,
-        meta: {
-            ...item.child_object.meta,
-            related_customer: String(item.parent_id),
-        }
-    }));
+    const customerTransactions = allTransactions.filter(tx => {
+        const parentId = getParentCustomerId(tx);
+        return parentId === customerId;
+    });
     
-    return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }, ['transactions-for-customer'], { tags: (customerId: string) => [`transactions:${customerId}`] });
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
   const [customers, transactionsResponse] = await Promise.all([
     getAllCustomers(),
-    fetch(`${WP_API_URL}/transactions?per_page=100`, { headers }),
+    fetch(`${WP_API_URL}/transactions?per_page=100`, { 
+      headers,
+      next: { tags: ['transactions'] }
+    }),
   ]);
 
   if (!transactionsResponse.ok) {
@@ -84,16 +96,6 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const allTransactions: Transaction[] = await transactionsResponse.json();
   const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
-
-  const getParentCustomerId = (transaction: Transaction): string | null => {
-    for (const key in transaction.meta) {
-      if (key.startsWith("parent-")) {
-        // @ts-ignore
-        return transaction.meta[key];
-      }
-    }
-    return null;
-  };
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
@@ -132,7 +134,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
     console.error('Failed to create customer:', error);
     throw new Error(error.message || 'Failed to create customer');
   }
-
+  revalidateTag('customers');
   return response.json();
 };
 
@@ -156,7 +158,8 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
     console.error('Failed to update customer:', error);
     throw new Error(error.message || 'Failed to update customer');
   }
-
+  revalidateTag(`customer:${id}`);
+  revalidateTag('customers');
   return response.json();
 }
 
@@ -171,13 +174,13 @@ export const deleteCustomer = async (id: number) => {
         console.error('Failed to delete customer:', error);
         throw new Error(error.message || 'Failed to delete customer.');
     }
-
+    revalidateTag('customers');
     return { success: true };
 }
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
-  // Step 1: Create the transaction post
-  const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
+  
+  const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -190,38 +193,22 @@ export const createTransaction = async (data: { customerId: number; date: string
         payment_method: data.payment_method,
         notes: data.notes || '',
       },
+      'jet_rel': {
+        // Assuming 22 is the relation ID for customer-to-transaction
+        'parent-22': [data.customerId]
+      }
     }),
   });
 
-  if (!transactionResponse.ok) {
-    const error = await transactionResponse.json();
+  if (!response.ok) {
+    const error = await response.json();
     console.error('Failed to create transaction post:', error);
     throw new Error(error.message || 'Failed to create transaction post');
   }
 
-  const newTransaction = await transactionResponse.json();
-
-  // Step 2: Create the relationship
-  const relationResponse = await fetch(JET_REL_API_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      parent_id: data.customerId,
-      child_id: newTransaction.id,
-      context: 'parent',
-      store_items_type: 'update',
-      meta: {}
-    }),
-  });
-
-  if (!relationResponse.ok) {
-    const error = await relationResponse.json();
-    console.error('Failed to create transaction relationship:', error);
-    // If linking fails, we should delete the orphaned transaction
-    await deleteTransaction(newTransaction.id);
-    throw new Error(error.message || 'Failed to create transaction relationship');
-  }
-
+  const newTransaction = await response.json();
+  revalidateTag(`transactions:${data.customerId}`);
+  revalidateTag('transactions');
   return newTransaction;
 };
 
@@ -236,6 +223,6 @@ export const deleteTransaction = async (transactionId: number) => {
         console.error('Failed to delete transaction:', error);
         throw new Error(error.message || 'Failed to delete transaction.');
     }
-
+    revalidateTag('transactions');
     return { success: true };
 }
