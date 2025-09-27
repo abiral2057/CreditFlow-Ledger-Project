@@ -1,18 +1,25 @@
 
 'use client';
 
-import { WalletCards, Users } from 'lucide-react';
+import { WalletCards, Users, LogIn, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { logout } from '@/lib/actions';
+import { Button } from '../ui/button';
 
-export function Header() {
+export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean; username?: string }) {
   const pathname = usePathname();
   
   const navLinks = [
     { href: '/customers', label: 'Customers', icon: Users },
     { href: '/transactions', label: 'Transactions', icon: WalletCards },
   ]
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/login';
+  };
 
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
@@ -21,27 +28,51 @@ export function Header() {
           <WalletCards className="h-7 w-7 text-accent" />
           <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
         </Link>
+        
+        {isLoggedIn && (
+            <nav className="hidden md:flex items-center gap-2">
+                {navLinks.map((link) => {
+                    const isActive = pathname.startsWith(link.href);
+                    return (
+                    <Link 
+                        key={link.href}
+                        href={link.href}
+                        className={cn(
+                            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                            isActive 
+                                ? "bg-primary/10 text-primary" 
+                                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                        )}
+                    >
+                        <link.icon className="h-4 w-4" />
+                        {link.label}
+                    </Link>
+                )
+                })}
+            </nav>
+        )}
 
-        <nav className="hidden md:flex items-center gap-2">
-            {navLinks.map((link) => {
-                const isActive = pathname.startsWith(link.href);
-                return (
-                <Link 
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                        isActive 
-                            ? "bg-primary/10 text-primary" 
-                            : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-                    )}
-                >
-                    <link.icon className="h-4 w-4" />
-                    {link.label}
-                </Link>
-            )
-            })}
-        </nav>
+        <div className='flex items-center gap-4'>
+            {isLoggedIn ? (
+                <>
+                  <div className='hidden sm:flex items-center gap-2 text-sm'>
+                    <User className='h-5 w-5 text-muted-foreground' />
+                    <span className='font-medium text-muted-foreground'>{username}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log Out
+                  </Button>
+                </>
+            ) : (
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                    </Link>
+                </Button>
+            )}
+        </div>
       </div>
     </header>
   );

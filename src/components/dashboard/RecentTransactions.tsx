@@ -7,7 +7,6 @@ import { formatAmount } from "@/lib/utils";
 import { User, CreditCard, Coins, Landmark } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "../ui/button";
-import { ClientRelativeTime } from "../common/ClientRelativeTime";
 
 type RecentTransactionsProps = {
     transactions: TransactionWithCustomer[];
@@ -58,7 +57,9 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                                             </Link>
                                         </Button>
                                     </p>
-                                    <ClientRelativeTime date={tx.date} />
+                                    <p className="text-xs text-muted-foreground">
+                                       {new Date(tx.date).toLocaleDateString()}
+                                    </p>
                                 </div>
                             </div>
                             <div className="text-right">

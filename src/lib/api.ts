@@ -2,18 +2,50 @@
 'use server';
 
 import 'server-only';
-import type { Customer, Transaction, JetRelTransactionResponse, TransactionWithCustomer } from './types';
+import type { Customer, Transaction, JetRelTransactionResponse, TransactionWithCustomer, WPAuthResponse } from './types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
+import { getIronSession } from 'iron-session';
+import { cookies } from 'next/headers';
+import { sessionOptions } from './auth';
 
-const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
-const JET_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/22';
-const USERNAME = 'admin';
-const PASSWORD = 'L30X mtkZ lpig SwO8 L8gP xcLc';
+const WP_API_URL_BASE = process.env.NEXT_PUBLIC_WP_API_URL || 'https://demo.leafletdigital.com.np/wp-json';
+const WP_API_URL = `${WP_API_URL_BASE}/wp/v2`;
+const JET_REL_API_URL = `${WP_API_URL_BASE}/jet-rel/22`;
+const AUTH_URL = `${WP_API_URL_BASE}/jwt-auth/v1/token`;
 
-const headers = {
-  'Authorization': 'Basic ' + Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64'),
-  'Content-Type': 'application/json',
-};
+
+async function getHeaders(isAuthCall: boolean = false) {
+    const session = await getIronSession(cookies(), sessionOptions);
+    const token = session.token;
+    
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+
+    if (token && !isAuthCall) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+}
+
+export const validateUser = async (username: string, password: string):Promise<WPAuthResponse> => {
+    const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+    }
+    
+    return data;
+}
 
 // Helper function to extract customer ID from transaction title
 const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
@@ -22,6 +54,7 @@ const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
 }
 
 export const getAllCustomers = cache(async (): Promise<Customer[]> => {
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
     headers,
     next: { tags: ['customers'] }
@@ -39,6 +72,7 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
 }, ['customers'], { tags: ['customers'] });
 
 export const getCustomerById = cache(async (id: string): Promise<Customer> => {
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
     next: { tags: [`customer:${id}`] }
@@ -56,6 +90,7 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
+    const headers = await getHeaders();
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
         next: { tags: [`transactions`, `transactions:${customerId}`] }
@@ -80,6 +115,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
+  const headers = await getHeaders();
   const [customers, transactionsResponse] = await Promise.all([
     getAllCustomers(),
     fetch(`${WP_API_URL}/transactions?per_page=100`, { 
@@ -113,6 +149,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone: string; credit_limit: string; }) => {
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers`, {
     method: 'POST',
     headers,
@@ -138,6 +175,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
 };
 
 export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
@@ -163,6 +201,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
 }
 
 export const deleteCustomer = async (id: number) => {
+    const headers = await getHeaders();
     const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
@@ -178,7 +217,7 @@ export const deleteCustomer = async (id: number) => {
 }
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
-  
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -208,6 +247,7 @@ export const createTransaction = async (data: { customerId: number; date: string
 };
 
 export const deleteTransaction = async (transactionId: number) => {
+    const headers = await getHeaders();
     const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,

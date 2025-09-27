@@ -5,18 +5,25 @@ import { Header } from "@/components/common/Header";
 import type { Customer, Transaction, TransactionWithCustomer } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
-import { ArrowUp, ArrowDown, CircleDollarSign, User, Calendar } from "lucide-react";
+import { ArrowUp, ArrowDown, CircleDollarSign, User } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { TopCustomersChart } from "@/components/dashboard/TopCustomersChart";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { getIronSession } from 'iron-session';
+import { cookies } from 'next/headers';
+import { sessionOptions } from '@/lib/auth';
+
 
 type CustomerWithBalance = Customer & { balance: number };
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  const session = await getIronSession(cookies(), sessionOptions);
+  const isLoggedIn = session.isLoggedIn || false;
+  const username = session.username || 'User';
+
   const [customers, allTransactions] = await Promise.all([
     getAllTransactions(),
     getAllCustomers(),
@@ -54,7 +61,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} username={username} />
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4 md:px-6">
           <div className="mb-8">

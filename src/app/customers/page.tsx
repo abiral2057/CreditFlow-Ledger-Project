@@ -15,6 +15,16 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+
+
+  useEffect(() => {
+    // A real app would fetch session status from an API endpoint
+    // For now, we simulate it or leave it for the middleware to handle redirection
+    setIsLoggedIn(true); // Assuming logged in if they reach this page
+    setUsername('Admin'); // Placeholder
+  }, []);
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -45,7 +55,7 @@ export default function CustomersPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} username={username} />
         <main className="flex-1">
          <div className="container mx-auto py-8 px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">

@@ -9,10 +9,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
 import { TransactionsDataTable } from "@/components/transactions/TransactionsDataTable";
+import { getIronSession } from "iron-session";
+import { cookies } from "next/headers";
+import { sessionOptions } from "@/lib/auth";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
   let customer, transactions;
+
+  const session = await getIronSession(cookies(), sessionOptions);
+  const isLoggedIn = session.isLoggedIn || false;
+  const username = session.username || 'User';
 
   try {
     [customer, transactions] = await Promise.all([
@@ -42,7 +49,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} username={username} />
       <main className="flex-1 container mx-auto p-4 md:p-8 animate-in fade-in-0 duration-500">
         <div className="mb-6">
           <Button asChild variant="outline" size="sm">
