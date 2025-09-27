@@ -10,7 +10,6 @@ import { CreateCustomerForm } from "@/components/customers/CreateCustomerForm";
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SidebarInset } from '@/components/ui/sidebar';
 
 export default function Home() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -45,20 +44,22 @@ export default function Home() {
   }, [customers, searchQuery]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-muted/40">
       <Header />
-      <SidebarInset>
-        <div className="container mx-auto">
-          <main className="flex-1 p-4 md:p-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
-              <h2 className="text-3xl font-headline font-bold text-primary">Customer Dashboard</h2>
+        <main className="flex-1">
+         <div className="container mx-auto py-8 px-4 md:px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+              <div>
+                <h2 className="text-3xl font-headline font-bold text-primary">Customers</h2>
+                <p className="text-muted-foreground mt-1">An overview of all your customers.</p>
+              </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search by name, phone, or ID..."
-                    className="pl-10"
+                    placeholder="Search customers..."
+                    className="pl-10 bg-card"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -84,16 +85,15 @@ export default function Home() {
                 <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" to add your first one.'}</p>
               </div>
             )}
-          </main>
-        </div>
-      </SidebarInset>
+          </div>
+        </main>
     </div>
   );
 }
 
 function CardSkeleton() {
     return (
-        <div className="p-6 border rounded-lg shadow-sm">
+        <div className="p-6 bg-card border rounded-lg shadow-sm">
             <Skeleton className="h-6 w-3/4 mb-2" />
             <Skeleton className="h-4 w-1/2 mb-4" />
             <Skeleton className="h-4 w-1/3 mb-4" />

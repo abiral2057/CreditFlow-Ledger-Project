@@ -3,45 +3,46 @@
 
 import { WalletCards, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '../ui/sidebar';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const pathname = usePathname();
   
+  const navLinks = [
+    { href: '/', label: 'Customers', icon: Users },
+    { href: '/transactions', label: 'Transactions', icon: WalletCards },
+  ]
+
   return (
-    <>
-      <header className="bg-card border-b sticky top-0 z-40 shadow-sm md:z-50 md:pl-[calc(var(--sidebar-width-icon)_+_1rem)] peer-data-[collapsible=icon]:md:pl-[calc(var(--sidebar-width)_+_1rem)] transition-[padding] peer-data-[variant=inset]:hidden">
-        <div className="flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="md:hidden" />
-            <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
-              <WalletCards className="h-8 w-8 text-accent" />
-              <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
-            </Link>
-          </div>
-        </div>
-      </header>
-      <Sidebar>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Customers">
-                  <Link href="/">
-                      <Users />
-                      <span>Customers</span>
-                  </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/transactions'} tooltip="All Transactions">
-                  <Link href="/transactions">
-                      <WalletCards />
-                      <span>All Transactions</span>
-                  </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-      </Sidebar>
-    </>
+    <header className="bg-card border-b sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+        <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+          <WalletCards className="h-7 w-7 text-accent" />
+          <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+        </Link>
+
+        <nav className="hidden md:flex items-center gap-2">
+            {navLinks.map((link) => {
+                 const isActive = (link.href === '/' && pathname === '/') || (link.href !== '/' && pathname.startsWith(link.href));
+                 return (
+                    <Link 
+                        key={link.href}
+                        href={link.href}
+                        className={cn(
+                            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                            isActive 
+                                ? "bg-primary/10 text-primary" 
+                                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                        )}
+                    >
+                        <link.icon className="h-4 w-4" />
+                        {link.label}
+                    </Link>
+                )
+            })}
+        </nav>
+      </div>
+    </header>
   );
 }

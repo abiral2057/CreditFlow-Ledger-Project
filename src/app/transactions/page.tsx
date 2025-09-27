@@ -4,7 +4,6 @@ import { Header } from "@/components/common/Header";
 import { Card } from "@/components/ui/card";
 import { AllTransactionsDataTable } from "@/components/transactions/AllTransactionsDataTable";
 import type { TransactionWithCustomer } from "@/lib/types";
-import { SidebarInset } from "@/components/ui/sidebar";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,20 +11,21 @@ export default async function TransactionsPage() {
   const transactions: TransactionWithCustomer[] = await getAllTransactions();
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-muted/40">
       <Header />
-      <SidebarInset>
-        <div className="container mx-auto">
-          <main className="flex-1 p-4 md:p-8">
-            <div className="flex items-center justify-between mb-6">
+      <main className="flex-1">
+        <div className="container mx-auto py-8 px-4 md:px-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
               <h2 className="text-3xl font-headline font-bold text-primary">All Transactions</h2>
+              <p className="text-muted-foreground mt-1">A complete record of all credits and debits.</p>
             </div>
-            <Card className="shadow-sm">
-              <AllTransactionsDataTable transactions={transactions} />
-            </Card>
-          </main>
+          </div>
+          <Card className="shadow-sm">
+            <AllTransactionsDataTable transactions={transactions} />
+          </Card>
         </div>
-      </SidebarInset>
+      </main>
     </div>
   );
 }
