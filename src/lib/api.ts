@@ -88,7 +88,7 @@ export const createTransaction = async (data: { customerId: number, amount: stri
       title: `Transaction for customer ${data.customerId}`,
       status: 'publish',
       meta: {
-        related_customer: [data.customerId],
+        related_customer: String(data.customerId),
         amount: data.amount,
         transaction_type: data.transaction_type,
         payment_method: data.payment_method,

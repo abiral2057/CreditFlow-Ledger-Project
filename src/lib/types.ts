@@ -19,7 +19,7 @@ export interface Transaction {
     transaction_type: 'Credit' | 'Debit';
     amount: string;
     payment_method: 'Cash' | 'Card' | 'Bank Transfer';
-    related_customer: number[];
+    related_customer: string; // Changed from number[] to string
     notes: string;
   };
 }
