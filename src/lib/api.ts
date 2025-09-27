@@ -15,7 +15,7 @@ const JET_REL_API_URL = `${WP_API_URL_BASE}/jet-rel/22`;
 const AUTH_URL = `${WP_API_URL_BASE}/jwt-auth/v1/token`;
 
 
-async function getHeaders(isAuthCall: boolean = false) {
+async function getHeaders() {
     const session = await getIronSession(cookies(), sessionOptions);
     const token = session.token;
     
@@ -23,7 +23,7 @@ async function getHeaders(isAuthCall: boolean = false) {
         'Content-Type': 'application/json',
     };
 
-    if (token && !isAuthCall) {
+    if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -39,9 +39,9 @@ export const validateUser = async (username: string, password: string):Promise<W
         body: JSON.stringify({ username, password }),
     });
 
-    const data = await response.json();
+    const data: WPAuthResponse = await response.json();
     
-    if (!response.ok) {
+    if (!response.ok || data.success === false) {
         throw new Error(data.message || 'Authentication failed');
     }
     
