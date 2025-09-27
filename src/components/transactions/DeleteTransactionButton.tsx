@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,26 +23,25 @@ type DeleteTransactionButtonProps = {
 };
 
 export function DeleteTransactionButton({ transactionId, customerId }: DeleteTransactionButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await deleteTransaction(transactionId, customerId);
-      toast({
-        title: 'Success',
-        description: 'Transaction deleted successfully.',
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: (error as Error).message,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await deleteTransaction(transactionId, customerId);
+        toast({
+          title: 'Success',
+          description: 'Transaction deleted successfully.',
+        });
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: (error as Error).message,
+        });
+      }
+    });
   };
 
   return (
@@ -61,8 +60,8 @@ export function DeleteTransactionButton({ transactionId, customerId }: DeleteTra
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <AlertDialogAction onClick={handleDelete} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

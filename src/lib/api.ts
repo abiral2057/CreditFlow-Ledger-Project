@@ -27,7 +27,7 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
 export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
-    next: { tags: [`customers:${id}`] }
+    next: { tags: [`customer:${id}`] }
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -38,7 +38,7 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { tags: [`customers`] });
+}, ['customer-by-id'], { tags: [`customer`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
     const url = `${WP_API_URL}/transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100`;
