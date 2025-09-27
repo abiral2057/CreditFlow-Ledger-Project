@@ -57,12 +57,9 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   return customer;
 }, ['customer-by-id'], { tags: (id: string) => [`customer:${id}`] });
 
+
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
-    // This is the relation ID from the JetEngine relation
-    const relationId = 22; 
-    const url = `${WP_API_URL}/transactions?meta_key=parent-${relationId}&meta_value=${customerId}&per_page=100`;
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
         next: { tags: [`transactions`, `transactions:${customerId}`] }
     });
@@ -71,11 +68,16 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
         console.error(`Failed to fetch transactions for customer ${customerId}:`, await response.text());
         throw new Error('Failed to fetch transactions');
     }
-
-    const transactions: Transaction[] = await response.json();
     
+    const allTransactions: Transaction[] = await response.json();
+    
+    const customerTransactions = allTransactions.filter(tx => {
+        const parentId = getParentCustomerId(tx);
+        return parentId === customerId;
+    });
+
     // Sort transactions by date, most recent first
-    return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 }, ['transactions-for-customer'], { tags: (customerId: string) => [`transactions:${customerId}`] });
 
