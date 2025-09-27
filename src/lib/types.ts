@@ -1,4 +1,5 @@
 
+
 export interface Customer {
   id: number;
   title: {
@@ -23,6 +24,10 @@ export interface Transaction {
     related_customer: string; // This is the parent customer ID
     notes: string;
   };
+}
+
+export interface TransactionWithCustomer extends Transaction {
+  customer: Customer | null;
 }
 
 // Type for the response from /jet-rel/22/children/{_ID}

@@ -1,6 +1,6 @@
 
 import 'server-only';
-import type { Customer, Transaction, JetRelTransactionResponse } from './types';
+import type { Customer, Transaction, JetRelTransactionResponse, TransactionWithCustomer } from './types';
 import { unstable_cache as cache } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
@@ -71,6 +71,27 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     
     return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }, ['transactions-for-customer'], { tags: (customerId) => [`transactions:${customerId}`] });
+
+
+export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
+  const customers = await getAllCustomers();
+  const customerMap = new Map(customers.map(c => [String(c.id), c]));
+
+  const allTransactionsPromises = customers.map(customer => 
+    getTransactionsForCustomer(String(customer.id))
+  );
+
+  const transactionsPerCustomer = await Promise.all(allTransactionsPromises);
+  
+  const allTransactions = transactionsPerCustomer.flat();
+
+  const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions.map(tx => ({
+    ...tx,
+    customer: customerMap.get(tx.meta.related_customer) || null,
+  }));
+
+  return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone_number: string; credit_limit: string; }) => {

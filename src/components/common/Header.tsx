@@ -1,5 +1,6 @@
-import { WalletCards } from 'lucide-react';
+import { WalletCards, BookCopy } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export function Header() {
   return (
@@ -9,6 +10,15 @@ export function Header() {
           <WalletCards className="h-8 w-8 text-accent" />
           <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow Ledger</h1>
         </Link>
+
+        <nav>
+          <Button asChild variant="outline">
+            <Link href="/transactions">
+              <BookCopy className="mr-2" />
+              All Transactions
+            </Link>
+          </Button>
+        </nav>
       </div>
     </header>
   );
