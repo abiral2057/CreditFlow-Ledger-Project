@@ -31,7 +31,6 @@ import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  customer_code: z.string().min(1, 'Customer code is required.'),
   phone_number: z.string().optional(),
   credit_limit: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount'),
 });
@@ -45,7 +44,6 @@ export function CreateCustomerForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      customer_code: '',
       phone_number: '',
       credit_limit: '0',
     },
@@ -97,19 +95,6 @@ export function CreateCustomerForm() {
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customer_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="CUST-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

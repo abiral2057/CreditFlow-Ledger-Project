@@ -18,7 +18,7 @@ const headers = {
 // Helper function to extract customer ID from transaction title
 const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
     // Assuming title is like "Transaction for customer 862 - 100"
-    const match = transaction.title.rendered.match(/customer (\d+)/);
+    const match = transaction.title.rendered.match(/for customer (\d+)/);
     return match ? match[1] : null;
 }
 

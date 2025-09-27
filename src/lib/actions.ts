@@ -10,9 +10,18 @@ import {
   deleteTransaction as apiDeleteTransaction 
 } from './api';
 
-export async function createCustomer(data: { name: string; customer_code: string; phone_number?: string; credit_limit: string; }) {
+export async function createCustomer(data: { name: string; phone_number?: string; credit_limit: string; }) {
   try {
-    const newCustomer = await apiCreateCustomer({ ...data, phone_number: data.phone_number || '' });
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const customer_code = `CUST-${year}${month}${day}-${hours}${minutes}${seconds}`;
+
+    const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone_number: data.phone_number || '' });
     revalidateTag('customers');
     return newCustomer;
   } catch (error) {
