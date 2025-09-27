@@ -1,6 +1,6 @@
 import 'server-only';
-import { cache } from 'react';
 import type { Customer, Transaction } from './types';
+import { unstable_cache as cache } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const USERNAME = 'admin';
@@ -22,7 +22,7 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
   }
   const customers = await response.json();
   return customers;
-});
+}, ['customers'], { tags: ['customers'] });
 
 export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
@@ -38,7 +38,7 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-});
+}, ['customer-by-id'], { tags: [`customers`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
     const url = `${WP_API_URL}/transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100`;
@@ -52,7 +52,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     }
     const transactions = await response.json();
     return transactions;
-});
+}, ['transactions-for-customer'], { tags: [`transactions`] });
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone_number: string; credit_limit: string; }) => {
