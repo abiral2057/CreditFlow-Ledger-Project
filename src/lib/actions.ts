@@ -47,6 +47,7 @@ export async function createTransaction(data: { customerId: number, amount: stri
     try {
       const newTransaction = await apiCreateTransaction(data);
       revalidatePath(`/customers/${data.customerId}`);
+      revalidateTag(`transactions:${data.customerId}`);
       return newTransaction;
     } catch (error) {
       console.error('Action Error: createTransaction', error);
@@ -58,6 +59,7 @@ export async function deleteTransaction(transactionId: number, customerId: strin
     try {
         await apiDeleteTransaction(transactionId);
         revalidatePath(`/customers/${customerId}`);
+        revalidateTag(`transactions:${customerId}`);
     } catch (error) {
         console.error('Action Error: deleteTransaction', error);
         throw new Error((error as Error).message || 'Failed to delete transaction.');
@@ -68,6 +70,7 @@ export async function deleteMultipleTransactions(transactionIds: number[], custo
     try {
         await Promise.all(transactionIds.map(id => apiDeleteTransaction(id)));
         revalidatePath(`/customers/${customerId}`);
+        revalidateTag(`transactions:${customerId}`);
     } catch (error) {
         console.error('Action Error: deleteMultipleTransactions', error);
         throw new Error((error as Error).message || 'Failed to delete transactions.');
