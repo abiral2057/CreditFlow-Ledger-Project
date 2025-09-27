@@ -218,7 +218,7 @@ export const createTransaction = async (data: { customerId: number; date: string
 };
 
 export const deleteTransaction = async (transactionId: number) => {
-    const response = await fetch(`${WPAPI_URL}/transactions/${transactionId}?force=true`, {
+    const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,
     });
