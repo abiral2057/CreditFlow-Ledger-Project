@@ -82,6 +82,8 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
     const isAllSelected = selectedRows.length > 0 && selectedRows.length === transactions.length;
     const isIndeterminate = selectedRows.length > 0 && selectedRows.length < transactions.length;
 
+    const sortedTransactions = transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     return (
         <>
         {selectedRows.length > 0 && (
@@ -113,8 +115,8 @@ export function TransactionsDataTable({ transactions, customerId }: Transactions
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {transactions.length > 0 ? (
-                transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(tx => (
+                {sortedTransactions.length > 0 ? (
+                sortedTransactions.map(tx => (
                     <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"}>
                         <TableCell>
                             <Checkbox 
