@@ -16,9 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/lib/actions';
+import { login, loginWithGoogle } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
-import { WalletCards } from 'lucide-react';
+import { WalletCards, Chrome } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required.'),
@@ -54,6 +57,37 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Login Error',
+        description: (error as Error).message,
+      });
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      if(user) {
+        const res = await loginWithGoogle({
+            username: user.displayName || 'Google User',
+            email: user.email || '',
+        });
+
+        if (res.success) {
+            toast({
+              title: 'Login Successful',
+              description: `Welcome, ${user.displayName}!`,
+            });
+            router.push('/');
+        } else {
+            throw new Error(res.error || 'Google Sign-In failed.');
+        }
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Google Sign-In Error',
         description: (error as Error).message,
       });
     }
@@ -104,6 +138,14 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
+
+          <Separator className="my-6" />
+
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+            <Chrome className="mr-2 h-4 w-4" />
+            Continue with Google
+          </Button>
+
         </CardContent>
       </Card>
     </main>

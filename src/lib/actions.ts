@@ -38,6 +38,21 @@ export async function login(credentials: {username: string, password: string}): 
   }
 }
 
+export async function loginWithGoogle(userData: {username: string, email: string}): Promise<{success: boolean, error?: string}> {
+    try {
+        const session = await getIronSession(cookies(), sessionOptions);
+        session.isLoggedIn = true;
+        session.username = userData.username;
+        // No token for Google sign-in as it's handled differently
+        session.token = `google-user-${userData.email}`; 
+        await session.save();
+        return { success: true };
+    } catch (error) {
+        console.error('Google Login Action Error:', error);
+        return { success: false, error: (error as Error).message };
+    }
+}
+
 export async function logout() {
   const session = await getIronSession(cookies(), sessionOptions);
   session.destroy();
