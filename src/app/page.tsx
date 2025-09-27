@@ -48,13 +48,13 @@ export default function Home() {
       <Header />
         <main className="flex-1">
          <div className="container mx-auto py-8 px-4 md:px-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-              <div>
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+              <div className='w-full'>
                 <h2 className="text-3xl font-headline font-bold text-primary">Customers</h2>
                 <p className="text-muted-foreground mt-1">An overview of all your customers.</p>
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div className="relative w-full sm:w-64">
+              <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="search"
@@ -80,7 +80,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground rounded-lg border border-dashed">
+              <div className="text-center py-20 text-muted-foreground rounded-lg border border-dashed">
                 <p className="text-lg font-medium">No customers found.</p>
                 <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" to add your first one.'}</p>
               </div>
