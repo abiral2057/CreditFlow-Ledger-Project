@@ -58,25 +58,25 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
 }, ['customer-by-id'], { tags: (id: string) => [`customer:${id}`] });
 
 export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
-    const allTransactionsUrl = `${WP_API_URL}/transactions?per_page=100`;
-    const response = await fetch(allTransactionsUrl, {
+    // This is the relation ID from the JetEngine relation
+    const relationId = 22; 
+    const url = `${WP_API_URL}/transactions?meta_key=parent-${relationId}&meta_value=${customerId}&per_page=100`;
+    
+    const response = await fetch(url, {
         headers,
         next: { tags: [`transactions`, `transactions:${customerId}`] }
     });
 
     if (!response.ok) {
-        console.error('Failed to fetch transactions:', await response.text());
+        console.error(`Failed to fetch transactions for customer ${customerId}:`, await response.text());
         throw new Error('Failed to fetch transactions');
     }
 
-    const allTransactions: Transaction[] = await response.json();
+    const transactions: Transaction[] = await response.json();
     
-    const customerTransactions = allTransactions.filter(tx => {
-        const parentId = getParentCustomerId(tx);
-        return parentId === customerId;
-    });
-    
-    return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Sort transactions by date, most recent first
+    return transactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
 }, ['transactions-for-customer'], { tags: (customerId: string) => [`transactions:${customerId}`] });
 
 
@@ -180,6 +180,8 @@ export const deleteCustomer = async (id: number) => {
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   
+  const relationId = 22;
+
   const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -192,11 +194,8 @@ export const createTransaction = async (data: { customerId: number; date: string
         transaction_type: data.transaction_type,
         payment_method: data.payment_method,
         notes: data.notes || '',
+        [`parent-${relationId}`]: data.customerId
       },
-      'jet_rel': {
-        // Assuming 22 is the relation ID for customer-to-transaction
-        'parent-22': [data.customerId]
-      }
     }),
   });
 
