@@ -1,0 +1,88 @@
+import { Header } from "@/components/common/Header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft } from "lucide-react";
+
+export default function CustomerLoading() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-1 container mx-auto p-4 md:p-8">
+        <div className="mb-6">
+          <Button disabled variant="outline" size="sm" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Customers
+          </Button>
+        </div>
+
+        <Card className="mb-8">
+            <CardHeader>
+                <Skeleton className="h-9 w-1/3" />
+                <Skeleton className="h-4 w-1/2 mt-2" />
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-6 w-2/3" />
+            </CardContent>
+        </Card>
+        
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-8 w-1/2" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-8 w-1/2" />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-8 w-1/2" />
+                </CardContent>
+            </Card>
+        </div>
+
+        <Skeleton className="h-8 w-1/4 mb-4" />
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><Skeleton className="h-5 w-20" /></TableHead>
+                <TableHead><Skeleton className="h-5 w-20" /></TableHead>
+                <TableHead><Skeleton className="h-5 w-32" /></TableHead>
+                <TableHead className="text-right"><Skeleton className="h-5 w-24 ml-auto" /></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </main>
+    </div>
+  );
+}
