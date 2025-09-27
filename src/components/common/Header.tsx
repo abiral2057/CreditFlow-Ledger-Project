@@ -6,23 +6,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation';
 
-export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean; username?: string }) {
+export function Header({ isLoggedIn = true, username = 'Admin' }: { isLoggedIn?: boolean; username?: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   
   const navLinks = [
     { href: '/customers', label: 'Customers', icon: Users },
     { href: '/transactions', label: 'Transactions', icon: WalletCards },
   ]
-
-  const handleLogout = async () => {
-    // This is disabled as login is bypassed.
-    // await fetch('/api/logout');
-    // router.push('/login');
-    // router.refresh();
-  };
 
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
@@ -63,7 +54,14 @@ export function Header({ isLoggedIn = false, username }: { isLoggedIn?: boolean;
                     <span className='font-medium text-muted-foreground'>{username}</span>
                   </div>
                 </>
-            ) : null }
+            ) : (
+              <Button asChild>
+                <Link href="/login">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
         </div>
       </div>
     </header>

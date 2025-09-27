@@ -16,16 +16,14 @@ type CustomerWithBalance = Customer & { balance: number };
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const isLoggedIn = true;
-  const username = 'Admin';
 
-  const [customers, allTransactions] = await Promise.all([
+  const [allTransactions, allCustomers] = await Promise.all([
     getAllTransactions(),
     getAllCustomers(),
   ]);
 
   const customerBalances: Record<string, number> = {};
-  customers.forEach(tx => {
+  allTransactions.forEach(tx => {
     if (!tx.customer) return;
     const customerId = tx.customer.id.toString();
     const amount = parseFloat(tx.meta.amount || '0');
@@ -36,16 +34,16 @@ export default async function DashboardPage() {
     }
   });
 
-  const customersWithBalance: CustomerWithBalance[] = allTransactions.map(c => ({
+  const customersWithBalance: CustomerWithBalance[] = allCustomers.map(c => ({
     ...c,
     balance: customerBalances[c.id.toString()] || 0
   }));
 
-  const totalCredit = customers
+  const totalCredit = allTransactions
     .filter(t => t.meta.transaction_type === 'Credit')
     .reduce((sum, t) => sum + parseFloat(t.meta.amount || '0'), 0);
 
-  const totalDebit = customers
+  const totalDebit = allTransactions
     .filter(t => t.meta.transaction_type === 'Debit')
     .reduce((sum, t) => sum + parseFloat(t.meta.amount || '0'), 0);
 
@@ -56,7 +54,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header isLoggedIn={isLoggedIn} username={username} />
+      <Header />
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4 md:px-6">
           <div className="mb-8">
@@ -104,7 +102,7 @@ export default async function DashboardPage() {
                     <TopCustomersChart customers={customersWithBalance} />
                 </CardContent>
             </Card>
-            <RecentTransactions transactions={customers} />
+            <RecentTransactions transactions={allTransactions} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

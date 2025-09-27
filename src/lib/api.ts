@@ -1,50 +1,23 @@
 
+
 'use server';
 
 import 'server-only';
-import type { Customer, Transaction, JetRelTransactionResponse, TransactionWithCustomer, WPAuthResponse } from './types';
+import type { Customer, Transaction, TransactionWithCustomer } from './types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { sessionOptions } from './auth';
 
 const WP_API_URL_BASE = process.env.NEXT_PUBLIC_WP_API_URL || 'https://demo.leafletdigital.com.np/wp-json';
 const WP_API_URL = `${WP_API_URL_BASE}/wp/v2`;
-const JET_REL_API_URL = `${WP_API_URL_BASE}/jet-rel/22`;
-const AUTH_URL = `${WP_API_URL_BASE}/jwt-auth/v1/token`;
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password';
 
 async function getHeaders() {
-    const session = await getIronSession(cookies(), sessionOptions);
-    const token = session.token;
-    
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + btoa(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`)
     };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
     return headers;
-}
-
-export const validateUser = async (username: string, password: string):Promise<WPAuthResponse> => {
-    const response = await fetch(AUTH_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-    });
-
-    const data: WPAuthResponse = await response.json();
-    
-    if (!response.ok || data.success === false) {
-        throw new Error(data.message || 'Authentication failed');
-    }
-    
-    return data;
 }
 
 // Helper function to extract customer ID from transaction title

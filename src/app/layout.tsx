@@ -13,7 +13,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLoggedIn = true;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -27,7 +26,7 @@ export default async function RootLayout({
           {children}
         </div>
         <Toaster />
-        {isLoggedIn && <BottomNav />}
+        <BottomNav />
       </body>
     </html>
   );

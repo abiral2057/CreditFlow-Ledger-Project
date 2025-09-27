@@ -1,4 +1,5 @@
 
+
 import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,6 @@ import { TransactionsDataTable } from "@/components/transactions/TransactionsDat
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
   let customer, transactions;
-  
-  const isLoggedIn = true;
-  const username = 'Admin';
 
   try {
     [customer, transactions] = await Promise.all([
@@ -45,7 +43,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header isLoggedIn={isLoggedIn} username={username} />
+      <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8 animate-in fade-in-0 duration-500">
         <div className="mb-6">
           <Button asChild variant="outline" size="sm">
