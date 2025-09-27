@@ -39,6 +39,12 @@ export async function login(credentials: {username: string, password: string}): 
 }
 
 export async function loginWithGoogle(userData: {username: string, email: string}): Promise<{success: boolean, error?: string}> {
+    const ADMIN_EMAIL = 'nepalhighlandtreks2080@gmail.com';
+
+    if (userData.email !== ADMIN_EMAIL) {
+        return { success: false, error: 'Unauthorized access. This account is not permitted.' };
+    }
+
     try {
         const session = await getIronSession(cookies(), sessionOptions);
         session.isLoggedIn = true;
