@@ -6,8 +6,8 @@ import speakeasy from 'speakeasy';
 export async function GET(request: NextRequest) {
   const { TOTP_SECRET, AUTH_EMAIL } = process.env;
 
-  if (!TOTP_SECRET) {
-    return NextResponse.json({ success: false, message: 'TOTP_SECRET is not configured on the server. Please configure this first in your .env file.' }, { status: 500 });
+  if (!TOTP_SECRET || !AUTH_EMAIL) {
+    return NextResponse.json({ success: false, message: 'TOTP_SECRET or AUTH_EMAIL is not configured on the server. Please configure this first in your .env file.' }, { status: 500 });
   }
 
   try {
