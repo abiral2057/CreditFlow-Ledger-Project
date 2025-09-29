@@ -3,17 +3,18 @@
 
 import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
-import { revalidatePath, revalidateTag } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'password';
 
-async function getHeaders() {
+async function getHeaders(method: 'GET' | 'POST' | 'DELETE' = 'GET') {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`)
     };
+    if (method !== 'GET') {
+        headers['Authorization'] = 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`);
+    }
     return headers;
 }
 
@@ -25,7 +26,7 @@ const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
 }
 
 export const getAllCustomers = async (): Promise<Customer[]> => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('GET');
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
     headers,
     cache: 'no-store'
@@ -43,7 +44,7 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerById = async (id: string): Promise<Customer> => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('GET');
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
     cache: 'no-store'
@@ -61,9 +62,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const headers = await getHeaders();
-    // The API does not support filtering by a meta key that relates to another post type's ID directly.
-    // We must fetch all transactions and filter them manually. This is inefficient but required by the API structure.
+    const headers = await getHeaders('GET');
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
         cache: 'no-store'
@@ -81,14 +80,12 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
         return idFromTitle === customerId;
     });
 
-    // Sort transactions by date, most recent first
     return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
 };
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('GET');
   let customers: Customer[] = [];
   let allTransactions: Transaction[] = [];
 
@@ -111,12 +108,10 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
       throw error;
   }
 
-
   const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // Safely process each transaction
       if (!tx || !tx.title || !tx.title.rendered) {
         return null; 
       }
@@ -135,7 +130,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone: string; credit_limit: string; }) => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('POST');
   const response = await fetch(`${WP_API_URL}/customers`, {
     method: 'POST',
     headers,
@@ -160,7 +155,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
 };
 
 export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('POST');
   const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
@@ -184,7 +179,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
 }
 
 export const deleteCustomer = async (id: number) => {
-    const headers = await getHeaders();
+    const headers = await getHeaders('DELETE');
     const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
@@ -199,7 +194,7 @@ export const deleteCustomer = async (id: number) => {
 }
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
-  const headers = await getHeaders();
+  const headers = await getHeaders('POST');
   const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -227,7 +222,7 @@ export const createTransaction = async (data: { customerId: number; date: string
 };
 
 export const deleteTransaction = async (transactionId: number) => {
-    const headers = await getHeaders();
+    const headers = await getHeaders('DELETE');
     const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,
