@@ -20,29 +20,29 @@ export async function middleware(request: NextRequest) {
   });
   const isAccessingCustomerRoute = pathname.startsWith(customerRoute);
 
-  // If not logged in, redirect to login page if accessing protected routes
-  if (!isLoggedIn) {
+  // If not logged in, redirect to login page if accessing any protected route
+  if (!isLoggedIn && pathname !== loginRoute) {
     if (isAccessingAdminRoute || isAccessingCustomerRoute) {
       return NextResponse.redirect(new URL(loginRoute, request.url));
     }
     return NextResponse.next();
   }
 
-  // --- At this point, the user is logged in ---
+  // --- At this point, the user is logged in (or on the login page) ---
 
   // If a logged-in user tries to access the login page, redirect them.
-  if (pathname === loginRoute) {
+  if (isLoggedIn && pathname === loginRoute) {
     const targetUrl = isAdmin ? '/' : customerRoute;
     return NextResponse.redirect(new URL(targetUrl, request.url));
   }
 
   // If a non-admin tries to access an admin route, redirect to customer search
-  if (!isAdmin && isAccessingAdminRoute) {
+  if (isLoggedIn && !isAdmin && isAccessingAdminRoute) {
     return NextResponse.redirect(new URL(customerRoute, request.url));
   }
 
   // If an admin tries to access the customer search route, redirect to dashboard
-  if (isAdmin && isAccessingCustomerRoute) {
+  if (isLoggedIn && isAdmin && isAccessingCustomerRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }
   

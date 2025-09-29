@@ -56,13 +56,12 @@ export default function LoginPage() {
       }),
     });
 
-    const data = await response.json();
-    if (data.success) {
+    if (response.ok) {
       toast({ title: 'Login successful!' });
-      const targetUrl = data.isAdmin ? '/' : '/customer-search';
-      router.push(targetUrl);
+      // Remove client-side redirect, let the middleware handle it after refresh
       router.refresh(); 
     } else {
+       const data = await response.json();
       throw new Error(data.error || 'Login failed.');
     }
   }
