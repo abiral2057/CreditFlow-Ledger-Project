@@ -6,14 +6,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
+import { useRouter } from 'next/navigation';
 
 export function Header({ isLoggedIn = true, username = 'Admin' }: { isLoggedIn?: boolean; username?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   
   const navLinks = [
     { href: '/customers', label: 'Customers', icon: Users },
     { href: '/transactions', label: 'Transactions', icon: WalletCards },
   ]
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
 
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
@@ -53,6 +59,10 @@ export function Header({ isLoggedIn = true, username = 'Admin' }: { isLoggedIn?:
                     <UserIcon className='h-5 w-5 text-muted-foreground' />
                     <span className='font-medium text-muted-foreground'>{username}</span>
                   </div>
+                   <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
                 </>
             ) : (
               <Button asChild>
