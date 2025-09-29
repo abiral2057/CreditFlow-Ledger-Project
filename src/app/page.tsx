@@ -1,7 +1,6 @@
 
 
 import { getAllCustomers, getAllTransactions } from "@/lib/api";
-import { Header } from "@/components/common/Header";
 import type { Customer, Transaction, TransactionWithCustomer } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
@@ -53,82 +52,79 @@ export default async function DashboardPage() {
   const topDebitCustomers = [...customersWithBalance].sort((a, b) => a.balance - b.balance).slice(0, 5);
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header />
-      <main className="flex-1">
-        <div className="container mx-auto py-8 px-4 md:px-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-headline font-bold text-primary">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">An overview of your business.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
-                    <ArrowUp className="h-5 w-5 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-green-500">+{formatAmount(totalCredit)}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total Debit</CardTitle>
-                    <ArrowDown className="h-5 w-5 text-destructive" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-destructive">-{formatAmount(totalDebit)}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
-                    <CircleDollarSign className={`h-5 w-5 ${totalBalance >= 0 ? 'text-primary' : 'text-destructive'}`} />
-                </CardHeader>
-                <CardContent>
-                    <div className={`text-2xl font-bold ${totalBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>{formatAmount(totalBalance)}</div>
-                </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Top 5 Customers by Balance</CardTitle>
-                    <CardDescription>Highest and lowest balances.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <TopCustomersChart customers={customersWithBalance} />
-                </CardContent>
-            </Card>
-            <RecentTransactions transactions={allTransactions} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Credit Customers</CardTitle>
-                <CardDescription>Customers with the highest positive balance.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CustomerList customers={topCreditCustomers} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Debit Customers</CardTitle>
-                <CardDescription>Customers with the highest negative balance.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CustomerList customers={topDebitCustomers} />
-              </CardContent>
-            </Card>
-          </div>
-
+    <main className="flex-1">
+      <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-headline font-bold text-primary">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">An overview of your business.</p>
         </div>
-      </main>
-    </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
+                  <ArrowUp className="h-5 w-5 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold text-green-500">+{formatAmount(totalCredit)}</div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total Debit</CardTitle>
+                  <ArrowDown className="h-5 w-5 text-destructive" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold text-destructive">-{formatAmount(totalDebit)}</div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+                  <CircleDollarSign className={`h-5 w-5 ${totalBalance >= 0 ? 'text-primary' : 'text-destructive'}`} />
+              </CardHeader>
+              <CardContent>
+                  <div className={`text-2xl font-bold ${totalBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>{formatAmount(totalBalance)}</div>
+              </CardContent>
+          </Card>
+        </div>
+        
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+          <Card>
+              <CardHeader>
+                  <CardTitle>Top 5 Customers by Balance</CardTitle>
+                  <CardDescription>Highest and lowest balances.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <TopCustomersChart customers={customersWithBalance} />
+              </CardContent>
+          </Card>
+          <RecentTransactions transactions={allTransactions} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Credit Customers</CardTitle>
+              <CardDescription>Customers with the highest positive balance.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CustomerList customers={topCreditCustomers} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Debit Customers</CardTitle>
+              <CardDescription>Customers with the highest negative balance.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CustomerList customers={topDebitCustomers} />
+            </CardContent>
+          </Card>
+        </div>
+
+      </div>
+    </main>
   );
 }
 

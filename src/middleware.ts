@@ -5,7 +5,7 @@ import { sessionOptions } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
-  const session = await getIronSession(request, response, sessionOptions);
+  const session = await getIronSession(cookies(), sessionOptions);
 
   const { isLoggedIn } = session;
   const { pathname } = request.nextUrl;

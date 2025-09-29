@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/common/BottomNav';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { sessionOptions } from '@/lib/auth';
+import { Header } from '@/components/common/Header';
 
 export const metadata: Metadata = {
   title: 'CreditFlow Ledger',
@@ -28,6 +29,7 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
+        <Header isLoggedIn={isLoggedIn} username={username} />
         <div className="pb-20 md:pb-0">
           {children}
         </div>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { WalletCards, Users, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { WalletCards, Users, LogIn, LogOut, User as UserIcon, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,9 @@ export function Header({ isLoggedIn, username }: { isLoggedIn?: boolean; usernam
   const router = useRouter();
   
   const navLinks = [
-    { href: '/customers', label: 'Customers', icon: Users },
-    { href: '/transactions', label: 'Transactions', icon: WalletCards },
+    { href: '/', label: 'Dashboard', icon: LayoutGrid, exact: true },
+    { href: '/customers', label: 'Customers', icon: Users, exact: false },
+    { href: '/transactions', label: 'Transactions', icon: WalletCards, exact: false },
   ]
 
   const handleLogout = () => {
@@ -31,7 +32,7 @@ export function Header({ isLoggedIn, username }: { isLoggedIn?: boolean; usernam
         {isLoggedIn && (
             <nav className="hidden md:flex items-center gap-2">
                 {navLinks.map((link) => {
-                    const isActive = pathname.startsWith(link.href);
+                    const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
                     return (
                     <Link 
                         key={link.href}
@@ -64,12 +65,14 @@ export function Header({ isLoggedIn, username }: { isLoggedIn?: boolean; usernam
                   </Button>
                 </>
             ) : (
-              <Button asChild>
-                <Link href="/login">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Link>
-              </Button>
+                pathname !== '/login' && (
+                    <Button asChild>
+                        <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                        </Link>
+                    </Button>
+                )
             )}
         </div>
       </div>
