@@ -17,8 +17,9 @@ async function getHeaders() {
     return headers;
 }
 
-// Helper function to extract customer ID from transaction title
+// Helper function to safely extract customer ID from transaction title
 const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
+    if (!transaction?.title?.rendered) return null;
     const match = transaction.title.rendered.match(/for customer (\d+)/);
     return match ? match[1] : null;
 }
@@ -35,8 +36,8 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
   }
   const customers = await response.json();
   return customers.sort((a: Customer, b: Customer) => {
-    const codeA = parseInt(a.meta.customer_code.split('-')[1] || '0');
-    const codeB = parseInt(b.meta.customer_code.split('-')[1] || '0');
+    const codeA = parseInt((a.meta.customer_code || 'CUST-0').split('-')[1] || '0');
+    const codeB = parseInt((b.meta.customer_code || 'CUST-0').split('-')[1] || '0');
     return codeA - codeB;
   });
 };
@@ -62,7 +63,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     const headers = await getHeaders();
     // The API does not support filtering by a meta key that relates to another post type's ID directly.
-    // We must fetch all transactions and filter them manually.
+    // We must fetch all transactions and filter them manually. This is inefficient but required by the API structure.
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
         cache: 'no-store'
@@ -75,7 +76,6 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
     
     const allTransactions: Transaction[] = await response.json();
     
-    // The title of a transaction contains "for customer {ID}". We use this to filter.
     const customerTransactions = allTransactions.filter(tx => {
         const idFromTitle = getCustomerIdFromTitle(tx);
         return idFromTitle === customerId;
@@ -89,21 +89,37 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
   const headers = await getHeaders();
-  const [customers, allTransactions] = await Promise.all([
-    getAllCustomers(),
-    fetch(`${WP_API_URL}/transactions?per_page=100`, { 
-      headers: headers,
-      cache: 'no-store'
-    }).then(res => {
-      if (!res.ok) throw new Error('Failed to fetch transactions');
-      return res.json() as Promise<Transaction[]>;
-    }),
-  ]);
+  let customers: Customer[] = [];
+  let allTransactions: Transaction[] = [];
+
+  try {
+    [customers, allTransactions] = await Promise.all([
+      getAllCustomers(),
+      fetch(`${WP_API_URL}/transactions?per_page=100`, { 
+        headers: headers,
+        cache: 'no-store'
+      }).then(res => {
+        if (!res.ok) {
+            console.error('Failed to fetch transactions, response not ok:', res.status, res.statusText);
+            throw new Error('Failed to fetch transactions');
+        }
+        return res.json() as Promise<Transaction[]>;
+      }),
+    ]);
+  } catch (error) {
+      console.error("Error fetching initial data for getAllTransactions", error);
+      throw error;
+  }
+
 
   const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
+      // Safely process each transaction
+      if (!tx || !tx.title || !tx.title.rendered) {
+        return null; 
+      }
       const parentId = getCustomerIdFromTitle(tx);
       const customer = parentId ? customerMap.get(parentId) : null;
       
@@ -112,7 +128,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
         customer: customer || null,
       };
     })
-    .filter(tx => tx.customer !== null);
+    .filter((tx): tx is TransactionWithCustomer => tx !== null && tx.customer !== null);
 
   return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
