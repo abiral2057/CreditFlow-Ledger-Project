@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import 'server-only';
@@ -29,7 +30,7 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
   const headers = await getHeaders('GET');
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
     headers,
-    cache: 'no-store'
+    next: { revalidate: 60 } // Revalidate every 60 seconds
   });
   if (!response.ok) {
     console.error('Failed to fetch customers:', await response.text());
@@ -47,7 +48,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
   const headers = await getHeaders('GET');
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
-    cache: 'no-store'
+    next: { revalidate: 60 } // Revalidate every 60 seconds
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -65,7 +66,7 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
     const headers = await getHeaders('GET');
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
-        cache: 'no-store'
+        next: { revalidate: 60 } // Revalidate every 60 seconds
     });
 
     if (!response.ok) {
@@ -90,19 +91,17 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   let allTransactions: Transaction[] = [];
 
   try {
-    [customers, allTransactions] = await Promise.all([
-      getAllCustomers(),
-      fetch(`${WP_API_URL}/transactions?per_page=100`, { 
-        headers: headers,
-        cache: 'no-store'
-      }).then(res => {
-        if (!res.ok) {
-            console.error('Failed to fetch transactions, response not ok:', res.status, res.statusText);
-            throw new Error('Failed to fetch transactions');
-        }
-        return res.json() as Promise<Transaction[]>;
-      }),
+    const [customersRes, transactionsRes] = await Promise.all([
+      fetch(`${WP_API_URL}/customers?per_page=100`, { headers, next: { revalidate: 60 } }),
+      fetch(`${WP_API_URL}/transactions?per_page=100`, { headers, next: { revalidate: 60 } }),
     ]);
+
+    if (!customersRes.ok) throw new Error('Failed to fetch customers');
+    if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
+
+    customers = await customersRes.json();
+    allTransactions = await transactionsRes.json();
+
   } catch (error) {
       console.error("Error fetching initial data for getAllTransactions", error);
       throw error;

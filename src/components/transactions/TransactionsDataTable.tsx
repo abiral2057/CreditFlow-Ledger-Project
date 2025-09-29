@@ -87,6 +87,11 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
         currentPage * ITEMS_PER_PAGE
     );
 
+    useEffect(() => {
+        setCurrentPage(1);
+        setSelectedRows([]);
+    }, [dateRange, transactions]);
+
     const handleSelectAll = (checked: boolean | 'indeterminate') => {
         if (checked === true) {
             setSelectedRows(paginatedTransactions.map(tx => tx.id));
