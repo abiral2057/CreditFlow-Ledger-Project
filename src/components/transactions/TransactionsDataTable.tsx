@@ -303,7 +303,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                     )}
                   <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Payment Method</TableHead>
+                  <TableHead className="hidden md:table-cell">Payment Method</TableHead>
                   <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   {!isReadOnly && <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>}
@@ -330,11 +330,8 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
-                          <TableCell>
-                              <div className="flex items-center gap-2">
-                                {paymentMethodIcons[tx.meta.payment_method] || null}
-                                {tx.meta.payment_method}
-                              </div>
+                          <TableCell className="hidden md:table-cell">
+                              {tx.meta.payment_method || '-'}
                           </TableCell>
                           <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
                           <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
@@ -396,7 +393,5 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     
 }
-
-    
 
     
