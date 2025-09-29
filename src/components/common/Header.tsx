@@ -48,6 +48,19 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
        </header>
      )
   }
+  
+  if (!isLoggedIn) {
+     return (
+       <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+              <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+                <WalletCards className="h-7 w-7 text-accent" />
+                <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+              </Link>
+          </div>
+       </header>
+     )
+  }
 
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
@@ -57,7 +70,6 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
           <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
         </Link>
         
-        {isLoggedIn && (
         <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => {
                 const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
@@ -78,10 +90,8 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
             )
             })}
         </nav>
-        )}
 
-        {isLoggedIn ? (
-          <DropdownMenu>
+        <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                  <UserIcon className="h-5 w-5" />
@@ -108,11 +118,6 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : (
-           <Button asChild variant="outline" size="sm">
-            <Link href="/login">Admin Login</Link>
-           </Button>
-        )}
       </div>
     </header>
   );
