@@ -26,9 +26,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <Header isLoggedIn={isLoggedIn} isAdmin={isAdmin} />
-        <div>
-          {children}
-        </div>
+        {children}
         <Toaster />
       </body>
     </html>
