@@ -50,11 +50,8 @@ export default function LoginPage() {
         const data = await response.json();
         
         if (data.success) {
-            if (data.enroll) {
-              router.push('/setup-2fa');
-            } else {
-              router.push('/2fa');
-            }
+            // 2FA is temporarily disabled, so we go straight to the dashboard
+            window.location.href = '/dashboard';
         } else {
              toast({
                 title: "Login Failed",

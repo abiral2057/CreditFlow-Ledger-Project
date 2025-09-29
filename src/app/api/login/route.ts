@@ -1,34 +1,47 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serialize } from 'cookie';
+import * as jose from 'jose';
 
-// A simple in-memory flag to simulate if 2FA has been enrolled.
+// This is just for the temporary disabling of 2FA. 
 // In a real app, you'd check this from your database for the specific user.
 let isEnrolled = false; 
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
-  const { AUTH_EMAIL, AUTH_PASSWORD } = process.env;
+  const { AUTH_EMAIL, AUTH_PASSWORD, JWT_SECRET } = process.env;
 
   if (email === AUTH_EMAIL && password === AUTH_PASSWORD) {
-    const preauthCookie = serialize('preauth', '1', {
+    if (!JWT_SECRET) {
+      console.error('Missing JWT_SECRET environment variable.');
+      return NextResponse.json({ success: false, message: 'Server configuration error.' }, { status: 500 });
+    }
+    
+    // Create JWT
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const jwt = await new jose.SignJWT({ email: AUTH_EMAIL, sub: 'admin_user' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(secret);
+    
+    // Set auth cookie
+    const authCookie = serialize('auth', jwt, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 5, // 5 minutes
+      maxAge: 60 * 60, // 1 hour
       path: '/',
       sameSite: 'lax',
     });
 
+
     const response = NextResponse.json({ 
       success: true, 
-      message: 'Credentials valid.',
-      // Signal to the client whether to start the enrollment flow
-      // or the standard 2FA verification flow.
-      enroll: !isEnrolled 
+      message: 'Login successful.',
     });
     
-    response.headers.set('Set-Cookie', preauthCookie);
+    response.headers.set('Set-Cookie', authCookie);
     return response;
   }
 
