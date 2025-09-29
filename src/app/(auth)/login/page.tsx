@@ -16,9 +16,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { WalletCards } from 'lucide-react';
+import { WalletCards, Search } from 'lucide-react';
+import Link from 'next/link';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -57,7 +58,6 @@ export default function LoginPage() {
                     router.push('/setup-2fa');
                 }
             } else {
-                 // Should not happen with the new logic, but as a fallback
                 router.push('/dashboard');
                 router.refresh();
             }
@@ -124,6 +124,15 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
+        <CardFooter className="flex flex-col items-center justify-center pt-4 pb-4">
+            <p className="text-sm text-muted-foreground mb-3">Or</p>
+            <Button variant="outline" className="w-full" asChild>
+                <Link href="/customer-search">
+                    <Search className="mr-2 h-4 w-4" />
+                    Search Your Transactions
+                </Link>
+            </Button>
+        </CardFooter>
       </Card>
     </main>
   );
