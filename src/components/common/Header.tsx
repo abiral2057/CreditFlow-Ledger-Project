@@ -62,26 +62,66 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                 <WalletCards className="h-7 w-7 text-accent" />
                 <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
               </Link>
-              <nav className="hidden md:flex items-center gap-2">
-                {publicNavLinks.map((link) => {
-                    const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
-                    return (
-                        <Link 
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                                "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                                isActive 
-                                    ? "bg-primary/10 text-primary" 
-                                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-                            )}
-                        >
-                            <link.icon className="h-4 w-4" />
-                            {link.label}
-                        </Link>
-                    )
-                })}
-              </nav>
+              <div className="flex items-center gap-2">
+                <nav className="hidden md:flex items-center gap-2">
+                    {publicNavLinks.map((link) => {
+                        const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+                        return (
+                            <Link 
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                    isActive 
+                                        ? "bg-primary/10 text-primary" 
+                                        : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                                )}
+                            >
+                                <link.icon className="h-4 w-4" />
+                                {link.label}
+                            </Link>
+                        )
+                    })}
+                </nav>
+                {/* Mobile Nav for public pages */}
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" size="icon" className="md:hidden">
+                            <Menu className="h-5 w-5" />
+                            <span className="sr-only">Open navigation menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left">
+                        <div className="flex flex-col gap-4 py-8">
+                            <Link href="/" className="flex items-center gap-3 text-primary mb-4 px-4">
+                                <WalletCards className="h-7 w-7 text-accent" />
+                                <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+                            </Link>
+                            <nav className="flex flex-col gap-2">
+                                {publicNavLinks.map((link) => {
+                                    const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+                                    return (
+                                    <SheetClose asChild key={link.href}>
+                                    <Link 
+                                        href={link.href}
+                                        className={cn(
+                                            "flex items-center gap-3 rounded-lg px-4 py-2.5 text-base font-medium transition-colors",
+                                            isActive 
+                                                ? "bg-primary/10 text-primary" 
+                                                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                                        )}
+                                    >
+                                        <link.icon className="h-5 w-5" />
+                                        {link.label}
+                                    </Link>
+                                    </SheetClose>
+                                )
+                                })}
+                            </nav>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+              </div>
           </div>
        </header>
      )
