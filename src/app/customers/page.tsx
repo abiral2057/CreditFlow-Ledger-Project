@@ -42,7 +42,7 @@ export default async function CustomersPage({ searchParams }: { searchParams?: {
           ) : (
             <div className="text-center py-20 text-muted-foreground rounded-lg border border-dashed">
               <p className="text-lg font-medium">No customers found.</p>
-              <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" to add your first one."}</p>
+              <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" to add your first one."'}</p>
             </div>
           )}
         </div>
