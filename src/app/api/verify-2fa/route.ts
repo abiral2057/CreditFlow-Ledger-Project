@@ -4,9 +4,11 @@ import speakeasy from 'speakeasy';
 import { serialize } from 'cookie';
 import * as jose from 'jose';
 import { setEnrolledStatus } from '../login/route';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
-  const preauthCookie = request.cookies.get('preauth');
+  const cookieStore = cookies();
+  const preauthCookie = cookieStore.get('preauth');
 
   if (!preauthCookie || preauthCookie.value !== '1') {
     return NextResponse.json({ success: false, message: 'Not authorized.' }, { status: 401 });
