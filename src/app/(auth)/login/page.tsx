@@ -36,8 +36,8 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: 'admin@example.com',
-      password: 'password',
+      email: '',
+      password: '',
     },
   });
 
@@ -61,7 +61,6 @@ export default function LoginPage() {
       toast({ title: 'Login successful!' });
       const targetUrl = data.isAdmin ? '/' : '/customer-search';
       router.push(targetUrl);
-      // Refresh after push to ensure layout re-renders with new session state
       router.refresh(); 
     } else {
       throw new Error(data.error || 'Login failed.');
@@ -119,7 +118,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin@example.com" {...field} />
+                      <Input placeholder="name@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
