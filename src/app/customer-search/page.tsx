@@ -21,8 +21,8 @@ export default function CustomerSearchPage() {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!customerCode.trim() || !customerName.trim()) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Please enter both Customer Code and Name.' });
+        if (!customerCode.trim() && !customerName.trim()) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Please enter either Customer Code or Name.' });
             return;
         }
 
@@ -32,10 +32,15 @@ export default function CustomerSearchPage() {
 
         try {
             const allCustomers = await getAllCustomers();
-            const foundCustomer = allCustomers.find(c => 
-                c.meta.customer_code.toLowerCase() === customerCode.toLowerCase().trim() &&
-                c.meta.name.toLowerCase() === customerName.toLowerCase().trim()
-            );
+            const foundCustomer = allCustomers.find(c => {
+                const codeMatch = customerCode.trim() ? c.meta.customer_code.toLowerCase() === customerCode.toLowerCase().trim() : false;
+                const nameMatch = customerName.trim() ? c.meta.name.toLowerCase() === customerName.toLowerCase().trim() : false;
+                
+                if (customerCode.trim() && customerName.trim()) {
+                    return codeMatch && nameMatch;
+                }
+                return codeMatch || nameMatch;
+            });
 
             if (foundCustomer) {
                 const customerTransactions = await getTransactionsForCustomer(foundCustomer.id.toString());
@@ -43,7 +48,7 @@ export default function CustomerSearchPage() {
                 setTransactions(customerTransactions);
                 toast({ title: 'Success', description: 'Transactions found.' });
             } else {
-                toast({ variant: 'destructive', title: 'Not Found', description: 'No customer found with that code and name combination.' });
+                toast({ variant: 'destructive', title: 'Not Found', description: 'No customer found with the provided details.' });
             }
         } catch (error) {
             console.error(error);
@@ -60,7 +65,7 @@ export default function CustomerSearchPage() {
                     <Card className="mb-8">
                         <CardHeader>
                             <CardTitle>Search Your Transactions</CardTitle>
-                            <CardDescription>Enter your unique Customer Code and full name to find your transaction history.</CardDescription>
+                            <CardDescription>Enter your unique Customer Code and/or full name to find your transaction history.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSearch} className="space-y-4">
@@ -119,5 +124,3 @@ export default function CustomerSearchPage() {
         </main>
     );
 }
-
-    
