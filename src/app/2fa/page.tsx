@@ -17,22 +17,25 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { WalletCards } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
 
 const formSchema = z.object({
-  email: z.string().email('Invalid email address.'),
-  password: z.string().min(1, 'Password is required.'),
+  token: z.string().min(6, 'Your one-time password must be 6 characters.'),
 });
 
-export default function LoginPage() {
+export default function TwoFactorPage() {
   const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      token: '',
     },
   });
 
@@ -40,7 +43,7 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch('/api/verify-2fa', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(values),
@@ -49,13 +52,15 @@ export default function LoginPage() {
         const data = await response.json();
         
         if (data.success) {
-            router.push('/2fa');
+            // Force a full page reload to the dashboard
+            window.location.href = '/dashboard';
         } else {
              toast({
-                title: "Login Failed",
-                description: data.message || "Invalid credentials. Please try again.",
+                title: "Verification Failed",
+                description: data.message || "Invalid code. Please try again.",
                 variant: "destructive"
             });
+            form.reset();
         }
     } catch(error) {
         toast({
@@ -72,43 +77,39 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-3 text-primary mb-4">
-            <WalletCards className="h-8 w-8 text-accent" />
-            <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
+            <ShieldCheck className="h-8 w-8 text-accent" />
+            <h1 className="text-3xl font-headline font-bold">Two-Factor Authentication</h1>
           </div>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your credentials to continue.</CardDescription>
+          <CardTitle className="text-2xl">Enter Your Code</CardTitle>
+          <CardDescription>Enter the 6-digit code from your authenticator app.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="email"
+                name="token"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
+                  <FormItem className="flex flex-col items-center">
+                    <FormLabel>One-Time Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} autoComplete="email" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} autoComplete="current-password" />
+                        <InputOTP maxLength={6} {...field}>
+                            <InputOTPGroup>
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                        </InputOTP>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Logging in...' : 'Login'}
+                {isSubmitting ? 'Verifying...' : 'Verify'}
               </Button>
             </form>
           </Form>

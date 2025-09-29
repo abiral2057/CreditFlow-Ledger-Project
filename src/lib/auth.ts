@@ -8,11 +8,14 @@ export const sessionOptions: IronSessionOptions = {
   },
 };
 
+// This iron-session implementation is being replaced by JWT.
+// This file is kept for now to prevent breaking dependencies but can be removed later.
 declare module 'iron-session' {
   interface IronSessionData {
     isLoggedIn?: boolean;
     username?: string;
     uid?: string;
     isAdmin?: boolean;
+    preauth?: boolean;
   }
 }

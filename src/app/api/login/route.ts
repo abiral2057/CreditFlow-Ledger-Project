@@ -1,18 +1,24 @@
-
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionOptions } from '@/lib/auth';
+import { serialize } from 'cookie';
 
 export async function POST(request: NextRequest) {
-  const session = await getIronSession(cookies(), sessionOptions);
-  
-  // Since we are disabling real auth, we'll just set the session as a logged-in admin.
-  session.isLoggedIn = true;
-  session.username = 'Admin';
-  session.uid = 'admin_user'; // Mock UID
-  session.isAdmin = true;
-  await session.save();
+  const { email, password } = await request.json();
 
-  return NextResponse.json({ success: true, username: 'Admin', isAdmin: true });
+  const { AUTH_EMAIL, AUTH_PASSWORD } = process.env;
+
+  if (email === AUTH_EMAIL && password === AUTH_PASSWORD) {
+    const preauthCookie = serialize('preauth', '1', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 5, // 5 minutes
+      path: '/',
+      sameSite: 'lax',
+    });
+
+    const response = NextResponse.json({ success: true, message: 'Credentials valid.' });
+    response.headers.set('Set-Cookie', preauthCookie);
+    return response;
+  }
+
+  return NextResponse.json({ success: false, message: 'Invalid credentials.' }, { status: 401 });
 }

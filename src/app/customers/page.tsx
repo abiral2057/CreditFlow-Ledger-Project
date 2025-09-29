@@ -1,4 +1,3 @@
-
 import { getAllCustomers } from "@/lib/api";
 import { CustomerCard } from "@/components/customers/CustomerCard";
 import type { Customer } from "@/lib/types";

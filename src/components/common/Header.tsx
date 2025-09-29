@@ -1,51 +1,49 @@
-
 'use client';
 
-import { WalletCards, Users, LogIn, LogOut, User as UserIcon, LayoutGrid } from 'lucide-react';
+import { WalletCards, Users, LogOut, User as UserIcon, LayoutGrid, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean; username?: string; isAdmin?: boolean; }) {
   const pathname = usePathname();
+  const router = useRouter();
   
   const navLinks = [
-    { href: '/', label: 'Dashboard', icon: LayoutGrid, exact: true },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, exact: true },
     { href: '/customers', label: 'Customers', icon: Users, exact: false },
     { href: '/transactions', label: 'Transactions', icon: WalletCards, exact: false },
-  ]
+  ];
 
-  // Since auth is disabled, we always show the admin view.
-  if (!isLoggedIn) {
-     return (
+  const handleLogout = async () => {
+    await fetch('/api/logout');
+    router.push('/login');
+    router.refresh();
+  };
+
+  // Render nothing or a minimal header for auth pages
+  if (pathname === '/login' || pathname === '/2fa') {
+     return null;
+  }
+
+  // Header for the unauthenticated customer search page
+  if(pathname === '/customer-search') {
+    return (
        <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
               <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
                 <WalletCards className="h-7 w-7 text-accent" />
                 <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
               </Link>
-              <nav className="flex items-center gap-2">
-                  {navLinks.map((link) => {
-                      const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
-                      return (
-                      <Link 
-                          key={link.href}
-                          href={link.href}
-                          className={cn(
-                              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                              isActive 
-                                  ? "bg-primary/10 text-primary" 
-                                  : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-                          )}
-                      >
-                          <link.icon className="h-4 w-4" />
-                          {link.label}
-                      </Link>
-                  )
-                  })}
-              </nav>
-              <div className='w-0'></div>
           </div>
        </header>
      )
@@ -54,12 +52,13 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+        <Link href="/dashboard" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
           <WalletCards className="h-7 w-7 text-accent" />
           <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
         </Link>
         
-        <nav className="flex items-center gap-2">
+        {isLoggedIn && (
+        <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => {
                 const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
                 return (
@@ -79,9 +78,41 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
             )
             })}
         </nav>
+        )}
 
-        {/* Empty div for spacing */}
-        <div className='w-0'></div>
+        {isLoggedIn ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                 <UserIcon className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">Admin</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {username}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+               <DropdownMenuItem onClick={() => router.push('/setup-qr')}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                <span>Setup 2FA</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+           <Button asChild variant="outline" size="sm">
+            <Link href="/login">Admin Login</Link>
+           </Button>
+        )}
       </div>
     </header>
   );
