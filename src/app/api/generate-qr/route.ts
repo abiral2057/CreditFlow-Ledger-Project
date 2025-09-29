@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import qrcode from 'qrcode';
 import speakeasy from 'speakeasy';
@@ -6,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { TOTP_SECRET, AUTH_EMAIL } = process.env;
 
   if (!TOTP_SECRET) {
-    return NextResponse.json({ success: false, message: 'TOTP_SECRET not configured on the server.' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'TOTP_SECRET is not configured on the server. Please configure this first in your .env file.' }, { status: 500 });
   }
 
   try {
