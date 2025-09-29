@@ -1,10 +1,8 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { BottomNav } from '@/components/common/BottomNav';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { sessionOptions } from '@/lib/auth';
 import { Header } from '@/components/common/Header';
 
 export const metadata: Metadata = {
@@ -17,10 +15,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getIronSession(cookies(), sessionOptions);
-  const isLoggedIn = session.isLoggedIn || false;
-  const username = session.username || 'Guest';
-  const isAdmin = session.isAdmin || false;
+  // Authentication is temporarily disabled.
+  const isLoggedIn = true;
+  const isAdmin = true;
+  const username = "Admin";
 
   return (
     <html lang="en" suppressHydrationWarning>

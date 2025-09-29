@@ -20,8 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { WalletCards, Chrome } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebase'; // Ensure this path is correct
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -31,7 +29,6 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,59 +40,15 @@ export default function LoginPage() {
 
   const { isSubmitting } = form.formState;
 
-  async function handleLogin(user: any) {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: user.email,
-        username: user.displayName || user.email,
-        uid: user.uid
-      }),
-    });
-
-    if (response.ok) {
-        const { isAdmin } = await response.json();
-        toast({ title: 'Login successful!' });
-        // Force a full page reload to ensure middleware re-evaluates the session
-        window.location.href = isAdmin ? '/' : '/customer-search';
-    } else {
-       const data = await response.json();
-      throw new Error(data.error || 'Login failed.');
-    }
-  }
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      await handleLogin(userCredential.user);
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message,
-      });
-    }
+    toast({
+        title: "Login Disabled",
+        description: "Authentication is temporarily disabled. You can access the dashboard directly.",
+        variant: "destructive"
+    });
+    router.push('/');
   }
 
-  async function handleGoogleSignIn() {
-    setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      await handleLogin(result.user);
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Google Sign-In Error',
-        description: error.message,
-      });
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
@@ -138,20 +91,16 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Logging in...' : 'Login'}
+                Login
               </Button>
             </form>
           </Form>
 
           <Separator className="my-6" />
 
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-             {isGoogleLoading ? 'Signing in...' : (
-                <>
-                    <Chrome className="mr-2 h-4 w-4" />
-                    Continue with Google
-                </>
-             )}
+          <Button variant="outline" className="w-full" disabled={true}>
+            <Chrome className="mr-2 h-4 w-4" />
+            Continue with Google
           </Button>
         </CardContent>
       </Card>
