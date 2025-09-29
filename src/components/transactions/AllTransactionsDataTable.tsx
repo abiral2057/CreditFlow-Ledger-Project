@@ -71,12 +71,13 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
             tx.customer?.meta.name || 'N/A',
             tx.meta.transaction_type,
             tx.meta.payment_method,
+            tx.meta.notes,
             `${tx.meta.transaction_type === 'Credit' ? '+' : '-'} ${formatAmount(tx.meta.amount)}`
         ]);
 
         (doc as any).autoTable({
             startY: 45,
-            head: [['Date', 'Customer', 'Type', 'Method', 'Amount']],
+            head: [['Date', 'Customer', 'Type', 'Method', 'Notes', 'Amount']],
             body: tableData,
             theme: 'striped',
             headStyles: { fillColor: [34, 49, 63] },
@@ -205,5 +206,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
         </>
     );
 }
+
+    
 
     
