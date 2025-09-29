@@ -6,21 +6,13 @@ import { sessionOptions } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   const session = await getIronSession(cookies(), sessionOptions);
-  const body = await request.json();
-
-  const { email, username, uid } = body;
   
-  // Enforce admin check
-  const ADMIN_UID = process.env.ADMIN_UID || 'fk1OUNDO5gc50Yi1JkvmrlMoS8g2';
-  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS?.split(',') || ['abiral.shrestha72@gmail.com', 'nepalhighlandtreks2080@gmail.com']);
-
-  const isAdmin = uid === ADMIN_UID || ADMIN_EMAILS.includes(email);
-
+  // Since we are disabling real auth, we'll just set the session as a logged-in admin.
   session.isLoggedIn = true;
-  session.username = username;
-  session.uid = uid;
-  session.isAdmin = isAdmin;
+  session.username = 'Admin';
+  session.uid = 'admin_user'; // Mock UID
+  session.isAdmin = true;
   await session.save();
 
-  return NextResponse.json({ success: true, username, isAdmin });
+  return NextResponse.json({ success: true, username: 'Admin', isAdmin: true });
 }

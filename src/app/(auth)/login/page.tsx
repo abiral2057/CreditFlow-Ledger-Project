@@ -41,12 +41,34 @@ export default function LoginPage() {
   const { isSubmitting } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    toast({
-        title: "Login Disabled",
-        description: "Authentication is temporarily disabled. You can access the dashboard directly.",
-        variant: "destructive"
-    });
-    router.push('/');
+    // This is now a mock login. We just call the API to set the session
+    // and then redirect to the dashboard.
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Force a full page reload to the dashboard
+            window.location.href = '/';
+        } else {
+             toast({
+                title: "Login Failed",
+                description: "Could not log you in. Please try again.",
+                variant: "destructive"
+            });
+        }
+    } catch(error) {
+        toast({
+            title: "An Error Occurred",
+            description: "Something went wrong. Please try again.",
+            variant: "destructive"
+        });
+    }
   }
 
 
@@ -91,7 +113,7 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                Login
+                {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
             </form>
           </Form>

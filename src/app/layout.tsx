@@ -15,7 +15,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Authentication is temporarily disabled.
+  // Authentication is disabled. Assume user is a logged-in admin.
   const isLoggedIn = true;
   const isAdmin = true;
   const username = "Admin";
