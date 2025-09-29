@@ -152,6 +152,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                         <TableHead>Customer</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Payment Method</TableHead>
+                        <TableHead className="hidden lg:table-cell">Notes</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -185,6 +186,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                     {tx.meta.payment_method}
                                 </div>
                             </TableCell>
+                             <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
                             <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                                 {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                             </TableCell>
@@ -192,7 +194,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                     ))
                     ) : (
                     <TableRow>
-                        <TableCell colSpan={5} className="text-center h-24">
+                        <TableCell colSpan={6} className="text-center h-24">
                             No transactions found for the selected date range.
                         </TableCell>
                     </TableRow>
