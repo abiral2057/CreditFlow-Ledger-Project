@@ -14,8 +14,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLoggedIn = true;
-  const isAdmin = true;
+  const isLoggedIn = false;
+  const isAdmin = false;
 
   return (
     <html lang="en" suppressHydrationWarning>
