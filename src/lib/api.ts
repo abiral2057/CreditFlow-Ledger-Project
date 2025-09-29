@@ -6,7 +6,7 @@ import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
-const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'password';
+const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
 async function getHeaders(method: 'GET' | 'POST' | 'DELETE' = 'GET') {
     const headers: HeadersInit = {
