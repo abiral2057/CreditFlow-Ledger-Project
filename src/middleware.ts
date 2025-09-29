@@ -1,42 +1,47 @@
+
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { sessionOptions } from './lib/auth';
 
-const protectedRoutes = ['/', '/customers', '/transactions', '/customer-search'];
+const protectedRoutes = ['/', '/customers', '/transactions'];
+const customerSearchRoute = '/customer-search';
+const loginRoute = '/login';
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next();
   const session = await getIronSession(cookies(), sessionOptions);
-
   const { isLoggedIn, isAdmin } = session;
   const { pathname } = request.nextUrl;
 
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-
-  // If user is logged in and tries to access login page, redirect them
-  if (isLoggedIn && pathname.startsWith('/login')) {
-    const url = isAdmin ? '/' : '/customer-search';
+  // If user is logged in and tries to access login page, redirect them away.
+  if (isLoggedIn && pathname === loginRoute) {
+    const url = isAdmin ? '/' : customerSearchRoute;
     return NextResponse.redirect(new URL(url, request.url));
   }
 
-  // If user is not logged in and tries to access a protected route, redirect to login
-  if (!isLoggedIn && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // If a non-admin tries to access admin-only routes
-  if (isLoggedIn && !isAdmin && (pathname.startsWith('/customers') || pathname.startsWith('/transactions') || pathname === '/')) {
-    return NextResponse.redirect(new URL('/customer-search', request.url));
-  }
-
-  // If an admin tries to access the customer search page
-  if (isLoggedIn && isAdmin && pathname.startsWith('/customer-search')) {
-    return NextResponse.redirect(new URL('/', request.url));
+  // Handle unauthenticated users trying to access protected content
+  if (!isLoggedIn) {
+    if (protectedRoutes.some(route => pathname.startsWith(route)) || pathname.startsWith(customerSearchRoute)) {
+        return NextResponse.redirect(new URL(loginRoute, request.url));
+    }
+    return NextResponse.next();
   }
   
-  return response;
+  // At this point, user is logged in. Handle role-based access.
+  if (isAdmin) {
+    // If admin is on the customer search page, redirect to dashboard.
+    if (pathname.startsWith(customerSearchRoute)) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  } else { // User is not an admin
+    // If a non-admin tries to access any admin-only protected route, redirect to customer search.
+    if (protectedRoutes.some(route => pathname.startsWith(route))) {
+      return NextResponse.redirect(new URL(customerSearchRoute, request.url));
+    }
+  }
+  
+  return NextResponse.next();
 }
  
 export const config = {
