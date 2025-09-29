@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import type { TransactionWithCustomer } from "@/lib/types";
@@ -64,7 +63,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className={`font-semibold text-sm ${tx.meta.transaction_type === 'Credit' ? 'text-green-500' : 'text-destructive'}`}>
+                                <p className={`font-semibold text-sm ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                                     {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                                 </p>
                                 <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">

@@ -1,3 +1,4 @@
+
 import { getAllCustomers, getAllTransactions } from "@/lib/api";
 import type { Customer, Transaction, TransactionWithCustomer } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -51,7 +52,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex-1">
-      <div className="container mx-auto py-8 px-4 md:px-6">
+      <div className="container mx-auto py-8 px-4 md:px-6 animate-in fade-in-0 duration-500">
         <div className="mb-8">
           <h1 className="text-3xl font-headline font-bold text-primary">Dashboard</h1>
           <p className="text-muted-foreground mt-1">An overview of your business.</p>
@@ -61,10 +62,10 @@ export default async function DashboardPage() {
           <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
-                  <ArrowUp className="h-5 w-5 text-green-500" />
+                  <ArrowUp className="h-5 w-5 text-[hsl(var(--chart-2))]" />
               </CardHeader>
               <CardContent>
-                  <div className="text-2xl font-bold text-green-500">+{formatAmount(totalCredit)}</div>
+                  <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">+{formatAmount(totalCredit)}</div>
               </CardContent>
           </Card>
           <Card>
@@ -145,7 +146,7 @@ function CustomerList({ customers }: { customers: CustomerWithBalance[] }) {
                         <p className="text-xs text-muted-foreground">{customer.meta.customer_code}</p>
                     </div>
                 </div>
-                <div className={`font-semibold text-sm ${customer.balance >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                <div className={`font-semibold text-sm ${customer.balance >= 0 ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                     {formatAmount(customer.balance)}
                 </div>
             </li>

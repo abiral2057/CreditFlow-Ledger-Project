@@ -316,7 +316,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                           )}
                           <TableCell className="font-medium">{new Date(tx.date).toLocaleDateString()}</TableCell>
                           <TableCell>
-                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'outline' : 'destructive'} className={cn(tx.meta.transaction_type === 'Credit' && "border-green-600/50 text-green-700 bg-green-50")}>
+                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'} >
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
@@ -327,7 +327,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               </div>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
-                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
+                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
                           {!isReadOnly && (
@@ -386,5 +386,3 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     
 }
-
-    

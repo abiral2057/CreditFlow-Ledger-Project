@@ -46,7 +46,7 @@ export function TopCustomersChart({ customers }: TopCustomersChartProps) {
                             return (
                                 <div className="p-2 bg-card border rounded-lg shadow-sm">
                                     <p className="font-bold">{payload[0].payload.name}</p>
-                                    <p className={`text-sm ${payload[0].value >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                                    <p className={`text-sm ${payload[0].value >= 0 ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                                         Balance: {formatAmount(payload[0].value as number)}
                                     </p>
                                 </div>
