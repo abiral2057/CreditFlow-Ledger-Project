@@ -50,9 +50,17 @@ export default function LoginPage() {
         const data = await response.json();
         
         if (data.success) {
-            // 2FA is temporarily disabled, so we go straight to the dashboard
-            router.push('/dashboard');
-            router.refresh(); // Ensure a full refresh to update session state in the layout
+            if (data.requires2FA) {
+                if (data.isEnrolled) {
+                    router.push('/2fa');
+                } else {
+                    router.push('/setup-2fa');
+                }
+            } else {
+                 // Should not happen with the new logic, but as a fallback
+                router.push('/dashboard');
+                router.refresh();
+            }
         } else {
              toast({
                 title: "Login Failed",
