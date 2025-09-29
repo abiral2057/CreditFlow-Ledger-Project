@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   
   // Enforce admin check
   const ADMIN_UID = process.env.ADMIN_UID || 'fk1OUNDO5gc50Yi1JkvmrlMoS8g2';
-  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS?.split(',') || ['abiral.shrestha72@gmail.com']);
+  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS?.split(',') || ['abiral.shrestha72@gmail.com', 'nepalhighlandtreks2080@gmail.com']);
 
   const isAdmin = uid === ADMIN_UID || ADMIN_EMAILS.includes(email);
 

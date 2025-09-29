@@ -57,9 +57,10 @@ export default function LoginPage() {
     });
 
     if (response.ok) {
-      toast({ title: 'Login successful!' });
-      // Remove client-side redirect, let the middleware handle it after refresh
-      router.refresh(); 
+        const { isAdmin } = await response.json();
+        toast({ title: 'Login successful!' });
+        // Force a full page reload to ensure middleware re-evaluates the session
+        window.location.href = isAdmin ? '/' : '/customer-search';
     } else {
        const data = await response.json();
       throw new Error(data.error || 'Login failed.');

@@ -16,27 +16,26 @@ export async function middleware(request: NextRequest) {
 
   const isAccessingAdminRoute = adminRoutes.some(route => {
     if (route === '/') return pathname === '/';
-    return pathname.startsWith(route) && pathname !== customerRoute;
+    return pathname.startsWith(route);
   });
   const isAccessingCustomerRoute = pathname.startsWith(customerRoute);
 
-  // If user is not logged in, redirect to login page for any protected route
+  // If user is not logged in and is trying to access a protected route, redirect to login
   if (!isLoggedIn && pathname !== loginRoute) {
     if (isAccessingAdminRoute || isAccessingCustomerRoute) {
       return NextResponse.redirect(new URL(loginRoute, request.url));
     }
-    return NextResponse.next();
   }
 
   // If user is logged in
   if (isLoggedIn) {
-    // If trying to access login page, redirect them away
+    // If they are on the login page, redirect them to their respective dashboard
     if (pathname === loginRoute) {
       const targetUrl = isAdmin ? '/' : customerRoute;
       return NextResponse.redirect(new URL(targetUrl, request.url));
     }
 
-    // If non-admin tries to access an admin route, redirect to customer search
+    // If a non-admin tries to access an admin route, redirect to customer search
     if (!isAdmin && isAccessingAdminRoute) {
       return NextResponse.redirect(new URL(customerRoute, request.url));
     }
@@ -53,4 +52,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
-
