@@ -1,8 +1,23 @@
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import * as jose from 'jose';
 
-export default function RootPage() {
-  // The root page now just redirects to the protected dashboard.
-  // The middleware will handle authentication checks.
-  redirect('/dashboard');
+export default async function RootPage() {
+    const cookieStore = cookies();
+    const authCookie = cookieStore.get('auth');
+
+    if (authCookie?.value) {
+      try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+        await jose.jwtVerify(authCookie.value, secret);
+        // If token is valid, go to the admin dashboard
+        redirect('/dashboard');
+      } catch (e) {
+        // Invalid token, fall through to public page
+      }
+    }
+    
+    // If not logged in, redirect to the new public search page
+    redirect('/customer-search');
 }

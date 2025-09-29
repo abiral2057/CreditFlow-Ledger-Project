@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { WalletCards } from 'lucide-react';
+import Link from 'next/link';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -51,12 +51,14 @@ export default function LoginPage() {
         
         if (data.success) {
             if (data.requires2FA) {
+                // The pre-auth cookie is set, now route to the correct 2FA page
                 if (data.isEnrolled) {
                     router.push('/2fa');
                 } else {
                     router.push('/setup-2fa');
                 }
             } else {
+                // No 2FA, logged in directly
                 router.push('/dashboard');
                 router.refresh();
             }
@@ -81,10 +83,10 @@ export default function LoginPage() {
     <main className="flex-1 flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="flex justify-center items-center gap-3 text-primary mb-4">
+          <Link href="/" className="flex justify-center items-center gap-3 text-primary mb-4 hover:opacity-80 transition-opacity">
             <WalletCards className="h-8 w-8 text-accent" />
             <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
-          </div>
+          </Link>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
           <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>

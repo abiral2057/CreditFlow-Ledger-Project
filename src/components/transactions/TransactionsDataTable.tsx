@@ -384,7 +384,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                 <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the selected {selectedRows.length} transaction(s).
+                    This will permanently delete the selected {selectedRows.length} transaction(s).
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

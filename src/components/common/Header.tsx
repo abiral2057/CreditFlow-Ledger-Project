@@ -28,8 +28,8 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
   ];
 
   const publicNavLinks = [
-      { href: '/login', label: 'Admin Login', icon: LogIn, exact: true },
       { href: '/customer-search', label: 'Search Transactions', icon: Search, exact: true },
+      { href: '/login', label: 'Admin Login', icon: LogIn, exact: true },
   ]
 
   const handleLogout = async () => {
@@ -42,10 +42,10 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
     }
   };
 
-  const is2FAPage = ['/2fa', '/setup-2fa'].includes(pathname);
+  const isAuthPage = ['/login', '/2fa', '/setup-2fa'].includes(pathname);
 
-  if (is2FAPage) {
-     return null; // Keep header hidden on 2FA pages
+  if (isAuthPage) {
+     return null;
   }
   
   if (!isLoggedIn) {
