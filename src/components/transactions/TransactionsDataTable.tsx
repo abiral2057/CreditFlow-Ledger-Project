@@ -304,7 +304,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                     )}
                   <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Payment Method</TableHead>
+                  <TableHead>Payment Method</TableHead>
                   <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   {!isReadOnly && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
@@ -331,7 +331,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">
+                          <TableCell>
                               <div className="flex items-center gap-2">
                                 {paymentMethodIcons[tx.meta.payment_method] || null}
                                 <span>{tx.meta.payment_method || '-'}</span>
@@ -400,3 +400,5 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     
 }
+
+    

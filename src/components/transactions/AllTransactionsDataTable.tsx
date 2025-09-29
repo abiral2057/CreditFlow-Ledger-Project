@@ -152,7 +152,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                         <TableHead className="w-[150px]">Date</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead className="hidden md:table-cell">Payment Method</TableHead>
+                        <TableHead>Payment Method</TableHead>
                         <TableHead className="hidden lg:table-cell">Notes</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
@@ -181,7 +181,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.meta.transaction_type}
                                 </Badge>
                             </TableCell>
-                             <TableCell className="hidden md:table-cell">
+                             <TableCell>
                                 <div className="flex items-center gap-2">
                                     {paymentMethodIcons[tx.meta.payment_method] || null}
                                     <span>{tx.meta.payment_method || '-'}</span>
@@ -206,3 +206,5 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
         </>
     );
 }
+
+    
