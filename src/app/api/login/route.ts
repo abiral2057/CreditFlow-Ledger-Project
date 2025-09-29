@@ -10,9 +10,11 @@ export async function POST(request: NextRequest) {
 
   const { email, username, uid } = body;
   
-  // Enforce admin UID check
+  // Enforce admin check
   const ADMIN_UID = process.env.ADMIN_UID || 'fk1OUNDO5gc50Yi1JkvmrlMoS8g2';
-  const isAdmin = uid === ADMIN_UID;
+  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS?.split(',') || ['nepalhighlandtreks2080@gmail.com']);
+
+  const isAdmin = uid === ADMIN_UID || ADMIN_EMAILS.includes(email);
 
   session.isLoggedIn = true;
   session.username = username;
@@ -22,4 +24,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ success: true, username, isAdmin });
 }
-
