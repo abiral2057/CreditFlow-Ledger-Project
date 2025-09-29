@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Pencil } from "lucide-react";
+import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,

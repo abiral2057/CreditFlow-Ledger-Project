@@ -1,7 +1,5 @@
 
-
 import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
 import { User, Phone, CircleDollarSign, Hash, ArrowUp, ArrowDown } from "lucide-react";
@@ -9,6 +7,7 @@ import { notFound } from "next/navigation";
 import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
 import { TransactionsDataTable } from "@/components/transactions/TransactionsDataTable";
 import { BackButton } from "@/components/common/BackButton";
+import { PaymentMethodChart } from "@/components/customers/PaymentMethodChart";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -71,8 +70,8 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             </CardContent>
         </Card>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-            <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
                     <ArrowUp className="h-5 w-5 text-[hsl(var(--chart-2))]" />
@@ -81,7 +80,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                     <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">+{formatAmount(totalCredit)}</div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className="lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Debit</CardTitle>
                     <ArrowDown className="h-5 w-5 text-destructive" />
@@ -90,13 +89,21 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                     <div className="text-2xl font-bold text-destructive">-{formatAmount(totalDebit)}</div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className="lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
                     <CircleDollarSign className={`h-5 w-5 ${balance >= 0 ? 'text-primary' : 'text-destructive'}`} />
                 </CardHeader>
                 <CardContent>
                     <div className={`text-2xl font-bold ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>{formatAmount(balance)}</div>
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-1">
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium mb-2">Payment Methods</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[70px] -mt-4">
+                    <PaymentMethodChart transactions={transactions} />
                 </CardContent>
             </Card>
         </div>
@@ -112,3 +119,4 @@ export default async function CustomerPage({ params }: { params: { id: string } 
     </div>
   );
 }
+

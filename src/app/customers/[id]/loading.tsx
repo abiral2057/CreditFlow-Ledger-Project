@@ -28,7 +28,7 @@ export default function CustomerLoading() {
             </CardContent>
         </Card>
         
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <Skeleton className="h-5 w-1/3" />
@@ -54,6 +54,14 @@ export default function CustomerLoading() {
                 </CardHeader>
                 <CardContent>
                     <Skeleton className="h-8 w-1/2" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="pb-2">
+                    <Skeleton className="h-5 w-2/3" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-[70px] w-full" />
                 </CardContent>
             </Card>
         </div>
