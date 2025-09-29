@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Skeleton } from '../ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type AllTransactionsDataTableProps = {
     transactions: TransactionWithCustomer[];
@@ -31,6 +32,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
 export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTableProps) {
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setDateRange({
@@ -131,7 +133,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                         defaultMonth={dateRange?.from}
                         selected={dateRange}
                         onSelect={setDateRange}
-                        numberOfMonths={2}
+                        numberOfMonths={isMobile ? 1 : 2}
                     />
                     </PopoverContent>
                 </Popover>

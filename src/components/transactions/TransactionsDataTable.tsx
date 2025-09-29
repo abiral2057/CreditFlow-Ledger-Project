@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 type TransactionsDataTableProps = {
@@ -55,6 +56,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
     const [currentPage, setCurrentPage] = useState(1);
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         // This ensures the date is only set on the client, preventing hydration mismatch
@@ -226,7 +228,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
     return (
         <>
         <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4 border-b">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
                  <Popover>
                     <PopoverTrigger asChild>
                     <Button
@@ -259,7 +261,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                         defaultMonth={dateRange?.from}
                         selected={dateRange}
                         onSelect={setDateRange}
-                        numberOfMonths={2}
+                        numberOfMonths={isMobile ? 1 : 2}
                     />
                     </PopoverContent>
                 </Popover>
@@ -269,7 +271,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                 </Button>
             </div>
             {!isReadOnly && selectedRows.length > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end sm:self-center">
                     <div className="text-sm text-muted-foreground">
                         {selectedRows.length} selected
                     </div>
