@@ -4,11 +4,11 @@ import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
-import { ArrowLeft, User, Phone, CircleDollarSign, Hash, ArrowUp, ArrowDown } from "lucide-react";
-import Link from "next/link";
+import { User, Phone, CircleDollarSign, Hash, ArrowUp, ArrowDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { AddTransactionForm } from "@/components/transactions/AddTransactionForm";
 import { TransactionsDataTable } from "@/components/transactions/TransactionsDataTable";
+import { BackButton } from "@/components/common/BackButton";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -44,12 +44,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
     <div className="flex flex-col min-h-screen bg-muted/40">
       <main className="flex-1 container mx-auto p-4 md:p-8 animate-in fade-in-0 duration-500">
         <div className="mb-6">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Customers
-            </Link>
-          </Button>
+          <BackButton />
         </div>
 
         <Card className="mb-8 shadow-sm">

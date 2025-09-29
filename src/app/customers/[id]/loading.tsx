@@ -1,6 +1,6 @@
-import { Header } from "@/components/common/Header";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
@@ -8,12 +8,11 @@ import { ArrowLeft } from "lucide-react";
 export default function CustomerLoading() {
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         <div className="mb-6">
           <Button disabled variant="outline" size="sm" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Customers
+            Back
           </Button>
         </div>
 
