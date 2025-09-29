@@ -18,13 +18,14 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
   ]
 
   const handleLogout = () => {
-    router.push('/api/logout');
+    // Since auth is disabled, this can just redirect to a neutral page.
+    // Or we can disable the button entirely. For now, let's disable it.
   };
 
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href={isLoggedIn && isAdmin ? "/" : "/login"} className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
           <WalletCards className="h-7 w-7 text-accent" />
           <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
         </Link>
@@ -59,7 +60,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                     <UserIcon className='h-5 w-5 text-muted-foreground' />
                     <span className='font-medium text-muted-foreground'>{username}</span>
                   </div>
-                   <Button variant="ghost" size="sm" onClick={handleLogout}>
+                   <Button variant="ghost" size="sm" onClick={handleLogout} disabled={true}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </Button>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Customer ledger system for tracking credit and debit.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
