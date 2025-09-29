@@ -1,7 +1,9 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import speakeasy from 'speakeasy';
 import { serialize } from 'cookie';
 import * as jose from 'jose';
+import { setEnrolledStatus } from '../login/route';
 
 export async function POST(request: NextRequest) {
   const preauthCookie = request.cookies.get('preauth');
@@ -26,6 +28,9 @@ export async function POST(request: NextRequest) {
   });
 
   if (verified) {
+    // Flag that the user has successfully completed 2FA setup and verification
+    setEnrolledStatus(true);
+    
     // Clear preauth cookie
     const clearPreauthCookie = serialize('preauth', '', {
       httpOnly: true,

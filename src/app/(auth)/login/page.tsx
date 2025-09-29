@@ -50,7 +50,11 @@ export default function LoginPage() {
         const data = await response.json();
         
         if (data.success) {
-            router.push('/2fa');
+            if (data.enroll) {
+              router.push('/setup-2fa');
+            } else {
+              router.push('/2fa');
+            }
         } else {
              toast({
                 title: "Login Failed",
