@@ -3,12 +3,11 @@
 
 import { WalletCards, Users, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation';
 
-export function Header({ isLoggedIn = true, username = 'Admin' }: { isLoggedIn?: boolean; username?: string }) {
+export function Header({ isLoggedIn, username }: { isLoggedIn?: boolean; username?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   
@@ -18,7 +17,7 @@ export function Header({ isLoggedIn = true, username = 'Admin' }: { isLoggedIn?:
   ]
 
   const handleLogout = () => {
-    router.push('/login');
+    router.push('/api/logout');
   };
 
   return (

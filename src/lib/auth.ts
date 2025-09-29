@@ -12,6 +12,5 @@ declare module 'iron-session' {
   interface IronSessionData {
     isLoggedIn?: boolean;
     username?: string;
-    token?: string;
   }
 }

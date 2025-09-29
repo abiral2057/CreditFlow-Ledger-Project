@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, WalletCards, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSession } from '@/hooks/use-session';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { isLoggedIn } = useSession();
 
   const navLinks = [
     { href: '/', label: 'Home', icon: Home, exact: true },
@@ -15,6 +17,9 @@ export function BottomNav() {
     { href: '/transactions', label: 'Transactions', icon: WalletCards, exact: false },
   ];
 
+  if (!isLoggedIn) {
+      return null;
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t shadow-t-sm z-50 flex items-center justify-around">
