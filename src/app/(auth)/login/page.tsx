@@ -16,10 +16,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { WalletCards, Search } from 'lucide-react';
-import Link from 'next/link';
+import { WalletCards } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -79,15 +78,15 @@ export default function LoginPage() {
 
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <main className="flex-1 flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-3 text-primary mb-4">
             <WalletCards className="h-8 w-8 text-accent" />
             <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
           </div>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your credentials to continue.</CardDescription>
+          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -124,15 +123,6 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col items-center justify-center pt-4 pb-4">
-            <p className="text-sm text-muted-foreground mb-3">Or</p>
-            <Button variant="outline" className="w-full" asChild>
-                <Link href="/customer-search">
-                    <Search className="mr-2 h-4 w-4" />
-                    Search Your Transactions
-                </Link>
-            </Button>
-        </CardFooter>
       </Card>
     </main>
   );
