@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/input-otp"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   token: z.string().min(6, 'Your one-time password must be 6 characters.'),
@@ -44,7 +46,7 @@ export default function Setup2FAPage() {
                     setQrCodeUrl(data.qrCodeUrl);
                     setSecret(data.secret);
                 } else {
-                     toast({ variant: 'destructive', title: 'Error', description: 'Could not load QR code.' });
+                     toast({ variant: 'destructive', title: 'Error', description: data.message || 'Could not load QR code.' });
                 }
             } catch (error) {
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not load QR code.' });
@@ -72,6 +74,7 @@ export default function Setup2FAPage() {
             const data = await response.json();
             if (data.success) {
                 toast({ title: 'Success!', description: '2FA has been set up successfully.' });
+                // Force a full page reload to ensure the session is picked up correctly
                 window.location.href = '/dashboard';
             } else {
                 toast({ variant: "destructive", title: "Verification Failed", description: data.message || "Invalid code. Please try again."});
@@ -93,9 +96,9 @@ export default function Setup2FAPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-6">
                     {isLoading ? (
-                        <div className="h-64 w-64 animate-pulse rounded-lg bg-muted" />
+                        <Skeleton className="h-64 w-64 rounded-lg" />
                     ) : (
-                        qrCodeUrl && <img src={qrCodeUrl} alt="2FA QR Code" className="rounded-lg" />
+                        qrCodeUrl && <Image src={qrCodeUrl} alt="2FA QR Code" width={256} height={256} className="rounded-lg" />
                     )}
 
                     <Form {...form}>
@@ -127,7 +130,7 @@ export default function Setup2FAPage() {
                         </Button>
                         </form>
                     </Form>
-                     {secret && (
+                     {secret && !isLoading && (
                         <div className="text-center p-4 bg-muted rounded-lg w-full">
                             <p className="text-sm text-muted-foreground">Can't scan? Enter this key manually:</p>
                             <p className="text-lg font-mono tracking-wider font-bold text-primary mt-2 break-all">{secret}</p>
