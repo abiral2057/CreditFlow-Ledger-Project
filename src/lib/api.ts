@@ -215,18 +215,23 @@ export const createTransaction = async (data: { customerId: number; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(id: number, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
+export async function updateTransaction(transactionId: number, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
   const headers = getAuthHeaders();
   
-  const body: any = {
-    meta: data
+  const body: {meta: any, date?:string} = {
+    meta: {
+      amount: data.amount,
+      transaction_type: data.transaction_type,
+      payment_method: data.payment_method,
+      notes: data.notes
+    }
   };
 
   if (data.date) {
     body.date = data.date;
   }
   
-  const response = await fetch(`${WP_API_URL}/transactions/${id}`, {
+  const response = await fetch(`${WP_API_URL}/transactions/${transactionId}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
