@@ -2,7 +2,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { BottomNav } from '@/components/common/BottomNav';
 import { Header } from '@/components/common/Header';
 
 export const metadata: Metadata = {
@@ -29,11 +28,10 @@ export default async function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <Header isLoggedIn={isLoggedIn} username={username} isAdmin={isAdmin} />
-        <div className="pb-20 md:pb-0">
+        <div>
           {children}
         </div>
         <Toaster />
-        {isLoggedIn && isAdmin && <BottomNav />}
       </body>
     </html>
   );
