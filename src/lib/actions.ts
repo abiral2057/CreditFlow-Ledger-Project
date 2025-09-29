@@ -20,7 +20,8 @@ export async function createCustomer(data: { name: string; phone?: string; credi
     const customer_code = `CUST-${String(nextId).padStart(3, '0')}`;
 
     const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone: data.phone || '' });
-    revalidateTag('customers');
+    revalidatePath('/customers');
+    revalidatePath('/');
     return newCustomer;
   } catch (error) {
     console.error('Action Error: createCustomer', error);
@@ -31,8 +32,9 @@ export async function createCustomer(data: { name: string; phone?: string; credi
 export async function updateCustomer(id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) {
   try {
     const updatedCustomer = await apiUpdateCustomer(id, data);
-    revalidateTag('customers');
-    revalidateTag(`customer:${id}`);
+    revalidatePath('/customers');
+    revalidatePath(`/customers/${id}`);
+    revalidatePath('/');
     return updatedCustomer;
   } catch (error) {
     console.error('Action Error: updateCustomer', error);
@@ -42,18 +44,14 @@ export async function updateCustomer(id: number, data: Partial<{ name: string; c
 
 export async function deleteCustomer(id: number) {
     try {
-        // First, get all transactions for the customer
         const transactions = await getTransactionsForCustomer(id.toString());
-
-        // Delete all associated transactions
         await Promise.all(transactions.map(tx => apiDeleteTransaction(tx.id)));
-        
-        // Then, delete the customer
         await apiDeleteCustomer(id);
 
-        revalidateTag('customers');
-        revalidateTag(`transactions:${id}`);
-        revalidateTag('transactions');
+        revalidatePath('/customers');
+        revalidatePath(`/customers/${id}`);
+        revalidatePath('/');
+        revalidatePath('/transactions');
     } catch (error) {
         console.error('Action Error: deleteCustomer', error);
         throw new Error((error as Error).message || 'Failed to delete customer and their transactions.');
@@ -64,10 +62,9 @@ export async function deleteCustomer(id: number) {
 export async function createTransaction(data: { customerId: number, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
     try {
       const newTransaction = await apiCreateTransaction(data);
-      revalidateTag(`transactions:${data.customerId}`);
-      revalidateTag('transactions');
       revalidatePath(`/customers/${data.customerId}`);
       revalidatePath('/transactions');
+      revalidatePath('/');
       return newTransaction;
     } catch (error) {
       console.error('Action Error: createTransaction', error);
@@ -78,10 +75,9 @@ export async function createTransaction(data: { customerId: number, date: string
 export async function deleteTransaction(transactionId: number, customerId: string) {
     try {
         await apiDeleteTransaction(transactionId);
-        revalidateTag(`transactions:${customerId}`);
-        revalidateTag('transactions');
         revalidatePath(`/customers/${customerId}`);
         revalidatePath('/transactions');
+        revalidatePath('/');
     } catch (error) {
         console.error('Action Error: deleteTransaction', error);
         throw new Error((error as Error).message || 'Failed to delete transaction.');
@@ -91,10 +87,9 @@ export async function deleteTransaction(transactionId: number, customerId: strin
 export async function deleteMultipleTransactions(transactionIds: number[], customerId: string) {
     try {
         await Promise.all(transactionIds.map(id => apiDeleteTransaction(id)));
-        revalidateTag(`transactions:${customerId}`);
-        revalidateTag('transactions');
         revalidatePath(`/customers/${customerId}`);
         revalidatePath('/transactions');
+        revalidatePath('/');
     } catch (error) {
         console.error('Action Error: deleteMultipleTransactions', error);
         throw new Error((error as Error).message || 'Failed to delete transactions.');

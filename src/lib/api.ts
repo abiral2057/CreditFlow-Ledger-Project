@@ -4,14 +4,16 @@
 
 import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
-import { unstable_cache as cache, revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
-
+const WP_APP_USER = process.env.WP_APP_USER || 'admin';
+const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'password';
 
 async function getHeaders() {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`)
     };
     return headers;
 }
@@ -22,11 +24,11 @@ const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
     return match ? match[1] : null;
 }
 
-export const getAllCustomers = cache(async (): Promise<Customer[]> => {
+export const getAllCustomers = async (): Promise<Customer[]> => {
   const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
     headers,
-    next: { tags: ['customers'] }
+    cache: 'no-store'
   });
   if (!response.ok) {
     console.error('Failed to fetch customers:', await response.text());
@@ -38,13 +40,13 @@ export const getAllCustomers = cache(async (): Promise<Customer[]> => {
     const codeB = parseInt(b.meta.customer_code.split('-')[1] || '0');
     return codeA - codeB;
   });
-}, ['customers'], { tags: ['customers'] });
+};
 
-export const getCustomerById = cache(async (id: string): Promise<Customer> => {
+export const getCustomerById = async (id: string): Promise<Customer> => {
   const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
     headers,
-    next: { tags: [`customer:${id}`] }
+    cache: 'no-store'
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -55,16 +57,16 @@ export const getCustomerById = cache(async (id: string): Promise<Customer> => {
   }
   const customer = await response.json();
   return customer;
-}, ['customer-by-id'], { 
-    tags: (id) => id ? [`customer:${id}`] : [] 
-});
+};
 
 
-export const getTransactionsForCustomer = cache(async (customerId: string): Promise<Transaction[]> => {
+export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     const headers = await getHeaders();
+    // The API does not support filtering by a meta key that relates to another post type's ID directly.
+    // We must fetch all transactions and filter them manually.
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
         headers,
-        next: { tags: [`transactions`, `transactions:${customerId}`] }
+        cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -74,6 +76,7 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     
     const allTransactions: Transaction[] = await response.json();
     
+    // The title of a transaction contains "for customer {ID}". We use this to filter.
     const customerTransactions = allTransactions.filter(tx => {
         const idFromTitle = getCustomerIdFromTitle(tx);
         return idFromTitle === customerId;
@@ -82,25 +85,21 @@ export const getTransactionsForCustomer = cache(async (customerId: string): Prom
     // Sort transactions by date, most recent first
     return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-}, ['transactions-for-customer'], { tags: (customerId: string) => [`transactions:${customerId}`] });
+};
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
-  const headers = await getHeaders();
-  const [customers, transactionsResponse] = await Promise.all([
+  const [customers, allTransactions] = await Promise.all([
     getAllCustomers(),
     fetch(`${WP_API_URL}/transactions?per_page=100`, { 
-      headers,
-      next: { tags: ['transactions'] }
+      headers: await getHeaders(),
+      cache: 'no-store'
+    }).then(res => {
+      if (!res.ok) throw new Error('Failed to fetch transactions');
+      return res.json() as Promise<Transaction[]>;
     }),
   ]);
 
-  if (!transactionsResponse.ok) {
-    console.error('Failed to fetch all transactions:', await transactionsResponse.text());
-    throw new Error('Failed to fetch all transactions');
-  }
-
-  const allTransactions: Transaction[] = await transactionsResponse.json();
   const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
@@ -141,7 +140,6 @@ export const createCustomer = async (data: { name: string; customer_code: string
     console.error('Failed to create customer:', error);
     throw new Error(error.message || 'Failed to create customer');
   }
-  revalidateTag('customers');
   return response.json();
 };
 
@@ -166,8 +164,6 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
     console.error('Failed to update customer:', error);
     throw new Error(error.message || 'Failed to update customer');
   }
-  revalidateTag(`customer:${id}`);
-  revalidateTag('customers');
   return response.json();
 }
 
@@ -183,7 +179,6 @@ export const deleteCustomer = async (id: number) => {
         console.error('Failed to delete customer:', error);
         throw new Error(error.message || 'Failed to delete customer.');
     }
-    revalidateTag('customers');
     return { success: true };
 }
 
@@ -212,8 +207,6 @@ export const createTransaction = async (data: { customerId: number; date: string
   }
 
   const newTransaction = await response.json();
-  revalidateTag(`transactions:${data.customerId}`);
-  revalidateTag('transactions');
   return newTransaction;
 };
 
@@ -229,6 +222,5 @@ export const deleteTransaction = async (transactionId: number) => {
         console.error('Failed to delete transaction:', error);
         throw new Error(error.message || 'Failed to delete transaction.');
     }
-    revalidateTag('transactions');
     return { success: true };
 }

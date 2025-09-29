@@ -45,7 +45,7 @@ const formSchema = z.object({
   date: z.date({
     required_error: 'A date is required.',
   }),
-  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount'),
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount').min(1, 'Amount is required.'),
   transaction_type: z.enum(['Credit', 'Debit']),
   payment_method: z.enum(['Cash', 'Card', 'Bank Transfer']),
   notes: z.string().optional(),
@@ -82,7 +82,6 @@ export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
       });
       setOpen(false);
       form.reset();
-      router.refresh();
     } catch (error) {
       toast({
         variant: 'destructive',

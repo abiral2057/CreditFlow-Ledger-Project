@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import type { Transaction, Customer } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,7 +38,7 @@ type TransactionsDataTableProps = {
     customer: Customer;
 }
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 10;
 
 const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Cash': <Coins className="h-4 w-4 text-muted-foreground" />,
@@ -49,7 +49,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
 export function TransactionsDataTable({ transactions, customerId, customer }: TransactionsDataTableProps) {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
     const [currentPage, setCurrentPage] = useState(1);
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -101,24 +101,24 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
     };
 
     const handleBulkDelete = async () => {
-        setIsDeleting(true);
-        try {
-          await deleteMultipleTransactions(selectedRows, customerId);
-          toast({
-            title: 'Success',
-            description: `${selectedRows.length} transaction(s) deleted successfully.`,
-          });
-          setSelectedRows([]);
-        } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: (error as Error).message,
-          });
-        } finally {
-          setIsDeleting(false);
-          setIsBulkDeleteConfirmOpen(false);
-        }
+        startTransition(async () => {
+            try {
+            await deleteMultipleTransactions(selectedRows, customerId);
+            toast({
+                title: 'Success',
+                description: `${selectedRows.length} transaction(s) deleted successfully.`,
+            });
+            setSelectedRows([]);
+            } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: (error as Error).message,
+            });
+            } finally {
+            setIsBulkDeleteConfirmOpen(false);
+            }
+        });
       };
 
     const handleDownloadPdf = () => {
@@ -146,12 +146,13 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
             new Date(tx.date).toLocaleDateString(),
             tx.meta.transaction_type,
             tx.meta.payment_method,
+            tx.meta.notes,
             `${tx.meta.transaction_type === 'Credit' ? '+' : '-'} ${formatAmount(tx.meta.amount)}`
         ]);
 
         (doc as any).autoTable({
             startY: 55,
-            head: [['Date', 'Type', 'Method', 'Amount']],
+            head: [['Date', 'Type', 'Method', 'Notes', 'Amount']],
             body: tableData,
             theme: 'striped',
             headStyles: { fillColor: [34, 49, 63] },
@@ -174,8 +175,8 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
         (doc as any).autoTable({
             startY: finalY + 14,
             body: [
-                ['Total Credit:', formatAmount(totalCredit)],
-                ['Total Debit:', formatAmount(totalDebit)],
+                ['Total Credit:', `+ ${formatAmount(totalCredit)}`],
+                ['Total Debit:', `- ${formatAmount(totalDebit)}`],
             ],
             theme: 'plain',
             tableWidth: 'wrap',
@@ -193,7 +194,10 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
             theme: 'plain',
             tableWidth: 'wrap',
             margin: { left: summaryX - 2 },
-            styles: { fontSize: 11, cellPadding: 1 },
+            styles: { fontSize: 11, cellPadding: 1, fontStyle: 'bold' },
+            bodyStyles: {
+                textColor: balance >= 0 ? [76, 175, 80] : [244, 67, 54],
+            }
         });
 
 
@@ -220,7 +224,7 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
 
     return (
         <>
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4 border-b">
             <div className="flex flex-col sm:flex-row items-center gap-4">
                  <Popover>
                     <PopoverTrigger asChild>
@@ -279,7 +283,7 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
           <Table>
               <TableHeader>
                   <TableRow>
-                  <TableHead className="w-[50px] px-2">
+                  <TableHead className="w-[50px] px-4">
                       <Checkbox 
                           checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
                           onCheckedChange={handleSelectAll}
@@ -289,24 +293,25 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                   <TableHead className="w-[120px]">Date</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="hidden sm:table-cell">Payment Method</TableHead>
+                  <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="w-[50px] text-right">Actions</TableHead>
+                  <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>
                   </TableRow>
               </TableHeader>
               <TableBody>
                   {paginatedTransactions.length > 0 ? (
                   paginatedTransactions.map(tx => (
-                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"}>
-                          <TableCell className="px-2">
+                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"} className="hover:bg-muted/50">
+                          <TableCell className="px-4">
                               <Checkbox 
                                   checked={selectedRows.includes(tx.id)}
                                   onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
                                   aria-label={`Select row ${tx.id}`}
                               />
                           </TableCell>
-                          <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
+                          <TableCell className="font-medium">{new Date(tx.date).toLocaleDateString()}</TableCell>
                           <TableCell>
-                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'}>
+                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'outline' : 'destructive'} className={cn(tx.meta.transaction_type === 'Credit' && "border-green-600/50 text-green-700 bg-green-50")}>
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
@@ -316,17 +321,18 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                                 {tx.meta.payment_method}
                               </div>
                           </TableCell>
-                          <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
+                          <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
+                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right pr-4">
                               <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
                           </TableCell>
                       </TableRow>
                   ))
                   ) : (
                   <TableRow>
-                      <TableCell colSpan={6} className="text-center h-24">
+                      <TableCell colSpan={7} className="text-center h-24">
                           No transactions found for the selected date range.
                       </TableCell>
                   </TableRow>
@@ -334,22 +340,24 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
               </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-between p-4">
-            <div className="text-sm text-muted-foreground">
-                Showing {paginatedTransactions.length > 0 ? ((currentPage -1) * ITEMS_PER_PAGE) + 1 : 0} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transaction(s).
+        {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                    Showing {paginatedTransactions.length > 0 ? ((currentPage -1) * ITEMS_PER_PAGE) + 1 : 0} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transaction(s).
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                    </Button>
+                    <span className="text-sm font-medium">Page {currentPage} of {totalPages > 0 ? totalPages : 1}</span>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages || totalPages === 0}>
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                </div>
             </div>
-            <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                </Button>
-                <span className="text-sm font-medium">Page {currentPage} of {totalPages > 0 ? totalPages : 1}</span>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages || totalPages === 0}>
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
-        </div>
+        )}
         <AlertDialog open={isBulkDeleteConfirmOpen} onOpenChange={setIsBulkDeleteConfirmOpen}>
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -360,8 +368,8 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleBulkDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
-                    {isDeleting ? 'Deleting...' : 'Delete'}
+                <AlertDialogAction onClick={handleBulkDelete} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+                    {isPending ? 'Deleting...' : 'Delete'}
                 </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
