@@ -59,12 +59,10 @@ export default function LoginPage() {
     const data = await response.json();
     if (data.success) {
       toast({ title: 'Login successful!' });
-      if (data.isAdmin) {
-        router.push('/');
-      } else {
-        router.push('/customer-search');
-      }
-      router.refresh();
+      const targetUrl = data.isAdmin ? '/' : '/customer-search';
+      router.push(targetUrl);
+      // Refresh after push to ensure layout re-renders with new session state
+      router.refresh(); 
     } else {
       throw new Error(data.error || 'Login failed.');
     }

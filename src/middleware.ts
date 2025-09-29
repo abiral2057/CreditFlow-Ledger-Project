@@ -14,7 +14,10 @@ export async function middleware(request: NextRequest) {
   const { isLoggedIn, isAdmin } = session;
   const { pathname } = request.nextUrl;
 
-  const isAccessingAdminRoute = adminRoutes.some(route => pathname.startsWith(route) && route !== '/') || pathname === '/';
+  const isAccessingAdminRoute = adminRoutes.some(route => {
+    if (route === '/') return pathname === '/';
+    return pathname.startsWith(route);
+  });
   const isAccessingCustomerRoute = pathname.startsWith(customerRoute);
 
   // If not logged in, redirect to login page if accessing protected routes
