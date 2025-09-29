@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import 'server-only';
@@ -89,10 +88,11 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
+  const headers = await getHeaders();
   const [customers, allTransactions] = await Promise.all([
     getAllCustomers(),
     fetch(`${WP_API_URL}/transactions?per_page=100`, { 
-      headers: await getHeaders(),
+      headers: headers,
       cache: 'no-store'
     }).then(res => {
       if (!res.ok) throw new Error('Failed to fetch transactions');
