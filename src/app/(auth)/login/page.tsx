@@ -53,7 +53,12 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isGoogle: false, email: user.email, username: user.displayName || user.email }),
+        body: JSON.stringify({ 
+          isGoogle: false, 
+          email: user.email, 
+          username: user.displayName || user.email,
+          uid: user.uid
+        }),
       });
 
       const data = await response.json();
@@ -85,7 +90,12 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isGoogle: true, email: user.email, username: user.displayName }),
+        body: JSON.stringify({ 
+            isGoogle: true, 
+            email: user.email, 
+            username: user.displayName,
+            uid: user.uid
+        }),
       });
 
       const data = await response.json();
