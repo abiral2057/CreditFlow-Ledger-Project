@@ -43,32 +43,37 @@ export default function LoginPage() {
 
   const { isSubmitting } = form.formState;
 
+  async function handleLogin(user: any) {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: user.email,
+        username: user.displayName || user.email,
+        uid: user.uid
+      }),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      toast({ title: 'Login successful!' });
+      if (data.isAdmin) {
+        router.push('/');
+      } else {
+        router.push('/customer-search');
+      }
+      router.refresh();
+    } else {
+      throw new Error(data.error || 'Login failed.');
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
-      
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          isGoogle: false, 
-          email: user.email, 
-          username: user.displayName || user.email,
-          uid: user.uid
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast({ title: 'Login successful!' });
-        router.push('/');
-        router.refresh();
-      } else {
-        throw new Error(data.error || 'Login failed.');
-      }
+      await handleLogin(userCredential.user);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -83,29 +88,7 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-            isGoogle: true, 
-            email: user.email, 
-            username: user.displayName,
-            uid: user.uid
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast({ title: 'Google Sign-In successful!' });
-        router.push('/');
-        router.refresh();
-      } else {
-        throw new Error(data.error || 'Google Sign-In failed.');
-      }
+      await handleLogin(result.user);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -126,7 +109,7 @@ export default function LoginPage() {
             <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
           </div>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+          <CardDescription>Enter your credentials to access your account.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

@@ -20,6 +20,7 @@ export default async function RootLayout({
   const session = await getIronSession(cookies(), sessionOptions);
   const isLoggedIn = session.isLoggedIn || false;
   const username = session.username || 'Guest';
+  const isAdmin = session.isAdmin || false;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -29,12 +30,12 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
-        <Header isLoggedIn={isLoggedIn} username={username} />
+        <Header isLoggedIn={isLoggedIn} username={username} isAdmin={isAdmin} />
         <div className="pb-20 md:pb-0">
           {children}
         </div>
         <Toaster />
-        {isLoggedIn && <BottomNav />}
+        {isLoggedIn && isAdmin && <BottomNav />}
       </body>
     </html>
   );
