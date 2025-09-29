@@ -51,7 +51,8 @@ export default function LoginPage() {
         
         if (data.success) {
             // 2FA is temporarily disabled, so we go straight to the dashboard
-            window.location.href = '/dashboard';
+            router.push('/dashboard');
+            router.refresh(); // Ensure a full refresh to update session state in the layout
         } else {
              toast({
                 title: "Login Failed",
