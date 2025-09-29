@@ -1,10 +1,7 @@
 import { getAllCustomers } from "@/lib/api";
-import { Header } from "@/components/common/Header";
 import { CustomerCard } from "@/components/customers/CustomerCard";
 import type { Customer } from "@/lib/types";
 import { CreateCustomerForm } from "@/components/customers/CreateCustomerForm";
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +20,6 @@ export default async function CustomersPage({ searchParams }: { searchParams?: {
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
-      <Header />
         <main className="flex-1">
          <div className="container mx-auto py-8 px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
