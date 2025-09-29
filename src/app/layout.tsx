@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 };
 
 async function getSessionData() {
-    const authCookie = cookies().get('auth');
+    const cookieStore = cookies();
+    const authCookie = cookieStore.get('auth');
     if (!authCookie?.value) {
         return { isLoggedIn: false };
     }
