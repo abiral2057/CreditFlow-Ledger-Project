@@ -59,7 +59,7 @@ export default function CustomerSearchPage() {
     };
 
     return (
-        <main className="flex-1">
+        <div className="flex-1">
             <div className="container mx-auto py-8 px-4 md:px-6">
                 <div className="max-w-2xl mx-auto">
                     <Card className="mb-8">
@@ -121,6 +121,6 @@ export default function CustomerSearchPage() {
                     )}
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
