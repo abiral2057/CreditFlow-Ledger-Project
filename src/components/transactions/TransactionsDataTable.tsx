@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
+import { CreditCard, Coins, Landmark, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Pencil } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +31,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { EditTransactionForm } from './EditTransactionForm';
 
 
 type TransactionsDataTableProps = {
@@ -306,7 +307,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                   <TableHead className="hidden md:table-cell">Payment Method</TableHead>
                   <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  {!isReadOnly && <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>}
+                  {!isReadOnly && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
                   </TableRow>
               </TableHeader>
               <TableBody>
@@ -331,15 +332,21 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                              {tx.meta.payment_method || '-'}
+                              <div className="flex items-center gap-2">
+                                {paymentMethodIcons[tx.meta.payment_method] || null}
+                                <span>{tx.meta.payment_method || '-'}</span>
+                              </div>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
                           <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
                           {!isReadOnly && (
-                            <TableCell className="text-right pr-4">
-                                <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                            <TableCell className="text-right pr-2">
+                                <div className="flex justify-end items-center">
+                                    <EditTransactionForm transaction={tx} customerId={customerId} />
+                                    <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                                </div>
                             </TableCell>
                           )}
                       </TableRow>
@@ -393,5 +400,3 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     
 }
-
-    

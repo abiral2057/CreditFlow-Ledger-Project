@@ -181,8 +181,11 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.meta.transaction_type}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                                {tx.meta.payment_method || '-'}
+                             <TableCell className="hidden md:table-cell">
+                                <div className="flex items-center gap-2">
+                                    {paymentMethodIcons[tx.meta.payment_method] || null}
+                                    <span>{tx.meta.payment_method || '-'}</span>
+                                </div>
                             </TableCell>
                              <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
                             <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
@@ -203,5 +206,3 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
         </>
     );
 }
-
-    

@@ -7,7 +7,8 @@ import {
   createCustomer as apiCreateCustomer, 
   updateCustomer as apiUpdateCustomer,
   deleteCustomer as apiDeleteCustomer,
-  createTransaction as apiCreateTransaction, 
+  createTransaction as apiCreateTransaction,
+  updateTransaction as apiUpdateTransaction,
   deleteTransaction as apiDeleteTransaction,
   getAllCustomers,
   getTransactionsForCustomer
@@ -72,6 +73,19 @@ export async function createTransaction(data: { customerId: number, date: string
     }
 }
 
+export async function updateTransaction(transactionId: number, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
+    try {
+      const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, date: data.date });
+      revalidatePath(`/customers/${customerId}`);
+      revalidatePath('/transactions');
+      revalidatePath('/');
+      return updatedTransaction;
+    } catch (error) {
+      console.error('Action Error: updateTransaction', error);
+      throw new Error((error as Error).message || 'Failed to update transaction.');
+    }
+}
+
 export async function deleteTransaction(transactionId: number, customerId: string) {
     try {
         await apiDeleteTransaction(transactionId);
@@ -95,4 +109,3 @@ export async function deleteMultipleTransactions(transactionIds: number[], custo
         throw new Error((error as Error).message || 'Failed to delete transactions.');
     }
 }
-

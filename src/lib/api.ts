@@ -9,13 +9,11 @@ const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
-async function getHeaders(method: 'GET' | 'POST' | 'DELETE' = 'GET') {
+async function getHeaders() {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`),
     };
-    if (method !== 'GET') {
-        headers['Authorization'] = 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`);
-    }
     return headers;
 }
 
@@ -27,8 +25,9 @@ const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
 }
 
 export const getAllCustomers = async (): Promise<Customer[]> => {
-  const headers = await getHeaders('GET');
-  const response = await fetch(`${WP_API_URL}/customers?per_page=100`, { 
+  const headers = await getHeaders();
+  // Using context=edit to ensure all meta fields are returned
+  const response = await fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { 
     headers,
     next: { revalidate: 60 } // Revalidate every 60 seconds
   });
@@ -45,8 +44,9 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerById = async (id: string): Promise<Customer> => {
-  const headers = await getHeaders('GET');
-  const response = await fetch(`${WP_API_URL}/customers/${id}`, { 
+  const headers = await getHeaders();
+  // Using context=edit to ensure all meta fields are returned
+  const response = await fetch(`${WP_API_URL}/customers/${id}?context=edit`, { 
     headers,
     next: { revalidate: 60 } // Revalidate every 60 seconds
   });
@@ -63,8 +63,9 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const headers = await getHeaders('GET');
-    const response = await fetch(`${WP_API_URL}/transactions?per_page=100`, {
+    const headers = await getHeaders();
+    // Using context=edit to ensure all meta fields are returned
+    const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, {
         headers,
         next: { revalidate: 60 } // Revalidate every 60 seconds
     });
@@ -86,14 +87,14 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
 
 
 export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> => {
-  const headers = await getHeaders('GET');
+  const headers = await getHeaders();
   let customers: Customer[] = [];
   let allTransactions: Transaction[] = [];
 
   try {
     const [customersRes, transactionsRes] = await Promise.all([
-      fetch(`${WP_API_URL}/customers?per_page=100`, { headers, next: { revalidate: 60 } }),
-      fetch(`${WP_API_URL}/transactions?per_page=100`, { headers, next: { revalidate: 60 } }),
+      fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { headers, next: { revalidate: 60 } }),
+      fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, { headers, next: { revalidate: 60 } }),
     ]);
 
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
@@ -129,7 +130,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone: string; credit_limit: string; }) => {
-  const headers = await getHeaders('POST');
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers`, {
     method: 'POST',
     headers,
@@ -154,7 +155,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
 };
 
 export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
-  const headers = await getHeaders('POST');
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
@@ -178,7 +179,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
 }
 
 export const deleteCustomer = async (id: number) => {
-    const headers = await getHeaders('DELETE');
+    const headers = await getHeaders();
     const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
@@ -193,7 +194,7 @@ export const deleteCustomer = async (id: number) => {
 }
 
 export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
-  const headers = await getHeaders('POST');
+  const headers = await getHeaders();
   const response = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -220,8 +221,33 @@ export const createTransaction = async (data: { customerId: number; date: string
   return newTransaction;
 };
 
+export async function updateTransaction(id: number, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
+  const headers = await getHeaders();
+  
+  const body: any = {
+    meta: data
+  };
+
+  if (data.date) {
+    body.date = data.date;
+  }
+  
+  const response = await fetch(`${WP_API_URL}/transactions/${id}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Failed to update transaction:', error);
+    throw new Error(error.message || 'Failed to update transaction');
+  }
+  return response.json();
+}
+
 export const deleteTransaction = async (transactionId: number) => {
-    const headers = await getHeaders('DELETE');
+    const headers = await getHeaders();
     const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,
