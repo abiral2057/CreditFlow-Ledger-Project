@@ -10,6 +10,7 @@ import { getAllCustomers, getTransactionsForCustomer } from '@/lib/api';
 import type { Customer, Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionsDataTable } from '@/components/transactions/TransactionsDataTable';
+import { Spinner } from '@/components/common/Spinner';
 
 export default function CustomerSearchPage() {
     const [customerCode, setCustomerCode] = useState('');
@@ -101,7 +102,8 @@ export default function CustomerSearchPage() {
                     </Card>
 
                     {isLoading && (
-                         <div className="text-center p-8">
+                         <div className="text-center p-8 flex flex-col items-center gap-4">
+                            <Spinner />
                             <p>Loading transactions...</p>
                         </div>
                     )}
