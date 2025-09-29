@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,6 +24,14 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   token: z.string().min(6, 'Your one-time password must be 6 characters.'),
@@ -32,6 +40,9 @@ const formSchema = z.object({
 export default function TwoFactorPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [secret, setSecret] = useState('');
+  const [isQrLoading, setIsQrLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,6 +52,26 @@ export default function TwoFactorPage() {
   });
 
   const { isSubmitting } = form.formState;
+
+  const fetchQrCode = async () => {
+      if (qrCodeUrl) return; // Don't fetch if we already have it
+      setIsQrLoading(true);
+      try {
+          const res = await fetch('/api/generate-qr');
+          const data = await res.json();
+          if (data.success) {
+              setQrCodeUrl(data.qrCodeUrl);
+              setSecret(data.secret);
+          } else {
+                toast({ variant: 'destructive', title: 'Error', description: data.message || 'Could not load QR code.' });
+          }
+      } catch (error) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not load QR code.' });
+      } finally {
+          setIsQrLoading(false);
+      }
+  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -53,7 +84,6 @@ export default function TwoFactorPage() {
         const data = await response.json();
         
         if (data.success) {
-            // Force a full page reload to the dashboard
             window.location.href = '/dashboard';
         } else {
              toast({
@@ -114,6 +144,31 @@ export default function TwoFactorPage() {
               </Button>
             </form>
           </Form>
+
+           <Accordion type="single" collapsible className="w-full mt-6">
+            <AccordionItem value="item-1">
+              <AccordionTrigger onClick={fetchQrCode}>
+                Need to set up a new device?
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col items-center gap-4 pt-4">
+                  <p className="text-sm text-muted-foreground text-center">Scan this QR code with your authenticator app.</p>
+                  {isQrLoading ? (
+                      <Skeleton className="h-48 w-48 rounded-lg" />
+                  ) : (
+                      qrCodeUrl && <Image src={qrCodeUrl} alt="2FA QR Code" width={192} height={192} className="rounded-lg" />
+                  )}
+                  {secret && (
+                      <div className="text-center p-3 bg-muted rounded-lg w-full text-xs">
+                          <p className="text-muted-foreground">Or enter this key manually:</p>
+                          <p className="font-mono tracking-wider font-bold text-primary mt-1 break-all">{secret}</p>
+                      </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
         </CardContent>
       </Card>
     </main>
