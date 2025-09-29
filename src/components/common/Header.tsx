@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '../ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from '../ui/sheet';
 import React from 'react';
 
 export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean; username?: string; isAdmin?: boolean; }) {
@@ -34,17 +34,11 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
 
   const handleLogout = async () => {
     try {
-        const res = await fetch('/api/logout');
-        if (res.ok) {
-            window.location.href = '/login';
-        } else {
-            router.push('/login');
-            router.refresh();
-        }
+        await fetch('/api/logout');
+        window.location.href = '/login';
     } catch (error) {
         console.error("Logout failed", error);
-        router.push('/login');
-        router.refresh();
+        window.location.href = '/login';
     }
   };
 
@@ -92,6 +86,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left">
+                        <SheetTitle className="sr-only">Main Menu</SheetTitle>
                         <div className="flex flex-col gap-4 py-8">
                             <Link href="/" className="flex items-center gap-3 text-primary mb-4 px-4">
                                 <WalletCards className="h-7 w-7 text-accent" />
@@ -194,6 +189,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
+                    <SheetTitle className="sr-only">Main Menu</SheetTitle>
                     <div className="flex flex-col gap-4 py-8">
                         <Link href="/dashboard" className="flex items-center gap-3 text-primary mb-4 px-4">
                             <WalletCards className="h-7 w-7 text-accent" />
