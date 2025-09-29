@@ -16,11 +16,11 @@ export async function middleware(request: NextRequest) {
 
   const isAccessingAdminRoute = adminRoutes.some(route => {
     if (route === '/') return pathname === '/';
-    return pathname.startsWith(route);
+    return pathname.startsWith(route) && pathname !== customerRoute;
   });
   const isAccessingCustomerRoute = pathname.startsWith(customerRoute);
 
-  // If not logged in, redirect to login page if accessing any protected route
+  // If user is not logged in, redirect to login page for any protected route
   if (!isLoggedIn && pathname !== loginRoute) {
     if (isAccessingAdminRoute || isAccessingCustomerRoute) {
       return NextResponse.redirect(new URL(loginRoute, request.url));
@@ -28,22 +28,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- At this point, the user is logged in (or on the login page) ---
+  // If user is logged in
+  if (isLoggedIn) {
+    // If trying to access login page, redirect them away
+    if (pathname === loginRoute) {
+      const targetUrl = isAdmin ? '/' : customerRoute;
+      return NextResponse.redirect(new URL(targetUrl, request.url));
+    }
 
-  // If a logged-in user tries to access the login page, redirect them.
-  if (isLoggedIn && pathname === loginRoute) {
-    const targetUrl = isAdmin ? '/' : customerRoute;
-    return NextResponse.redirect(new URL(targetUrl, request.url));
-  }
+    // If non-admin tries to access an admin route, redirect to customer search
+    if (!isAdmin && isAccessingAdminRoute) {
+      return NextResponse.redirect(new URL(customerRoute, request.url));
+    }
 
-  // If a non-admin tries to access an admin route, redirect to customer search
-  if (isLoggedIn && !isAdmin && isAccessingAdminRoute) {
-    return NextResponse.redirect(new URL(customerRoute, request.url));
-  }
-
-  // If an admin tries to access the customer search route, redirect to dashboard
-  if (isLoggedIn && isAdmin && isAccessingCustomerRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+    // If an admin tries to access the customer search route, redirect to dashboard
+    if (isAdmin && isAccessingCustomerRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
   }
   
   return NextResponse.next();
@@ -52,3 +53,4 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
+

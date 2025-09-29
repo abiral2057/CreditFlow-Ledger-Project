@@ -16,7 +16,7 @@ import {
 export async function createCustomer(data: { name: string; phone?: string; credit_limit: string; }) {
   try {
     const allCustomers = await getAllCustomers();
-    const nextId = (allCustomers.length > 0 ? Math.max(...allCustomers.map(c => parseInt(c.meta.customer_code.split('-')[1]) || 0)) : 0) + 1;
+    const nextId = (allCustomers.length > 0 ? Math.max(...allCustomers.map(c => parseInt(c.meta.customer_code?.split('-')[1] || '0') || 0)) : 0) + 1;
     const customer_code = `CUST-${String(nextId).padStart(3, '0')}`;
 
     const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone: data.phone || '' });
@@ -95,3 +95,4 @@ export async function deleteMultipleTransactions(transactionIds: number[], custo
         throw new Error((error as Error).message || 'Failed to delete transactions.');
     }
 }
+
