@@ -304,8 +304,8 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                     )}
                   <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Payment Method</TableHead>
-                  <TableHead className="hidden lg:table-cell">Notes</TableHead>
+                  <TableHead className="table-cell">Payment Method</TableHead>
+                  <TableHead className="hidden md:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   {!isReadOnly && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
                   </TableRow>
@@ -331,13 +331,13 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="table-cell">
                               <div className="flex items-center gap-2">
                                 {paymentMethodIcons[tx.meta.payment_method] || null}
                                 <span>{tx.meta.payment_method || '-'}</span>
                               </div>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
+                          <TableCell className="hidden md:table-cell truncate max-w-xs">{tx.meta.notes || '-'}</TableCell>
                           <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
@@ -400,5 +400,3 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     
 }
-
-    
