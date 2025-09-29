@@ -36,6 +36,7 @@ type TransactionsDataTableProps = {
     transactions: Transaction[];
     customerId: string;
     customer: Customer;
+    isReadOnly?: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -46,7 +47,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
 };
 
-export function TransactionsDataTable({ transactions, customerId, customer }: TransactionsDataTableProps) {
+export function TransactionsDataTable({ transactions, customerId, customer, isReadOnly = false }: TransactionsDataTableProps) {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
@@ -267,7 +268,7 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                     Download PDF
                 </Button>
             </div>
-            {selectedRows.length > 0 && (
+            {!isReadOnly && selectedRows.length > 0 && (
                 <div className="flex items-center gap-2">
                     <div className="text-sm text-muted-foreground">
                         {selectedRows.length} selected
@@ -283,32 +284,36 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
           <Table>
               <TableHeader>
                   <TableRow>
-                  <TableHead className="w-[50px] px-4">
-                      <Checkbox 
-                          checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
-                          onCheckedChange={handleSelectAll}
-                          aria-label="Select all rows on this page"
-                      />
-                  </TableHead>
+                    {!isReadOnly && (
+                        <TableHead className="w-[50px] px-4">
+                            <Checkbox 
+                                checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
+                                onCheckedChange={handleSelectAll}
+                                aria-label="Select all rows on this page"
+                            />
+                        </TableHead>
+                    )}
                   <TableHead className="w-[120px]">Date</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="hidden sm:table-cell">Payment Method</TableHead>
                   <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>
+                  {!isReadOnly && <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>}
                   </TableRow>
               </TableHeader>
               <TableBody>
                   {paginatedTransactions.length > 0 ? (
                   paginatedTransactions.map(tx => (
                       <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"} className="hover:bg-muted/50">
-                          <TableCell className="px-4">
-                              <Checkbox 
-                                  checked={selectedRows.includes(tx.id)}
-                                  onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
-                                  aria-label={`Select row ${tx.id}`}
-                              />
-                          </TableCell>
+                          {!isReadOnly && (
+                            <TableCell className="px-4">
+                                <Checkbox 
+                                    checked={selectedRows.includes(tx.id)}
+                                    onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
+                                    aria-label={`Select row ${tx.id}`}
+                                />
+                            </TableCell>
+                          )}
                           <TableCell className="font-medium">{new Date(tx.date).toLocaleDateString()}</TableCell>
                           <TableCell>
                               <Badge variant={tx.meta.transaction_type === 'Credit' ? 'outline' : 'destructive'} className={cn(tx.meta.transaction_type === 'Credit' && "border-green-600/50 text-green-700 bg-green-50")}>
@@ -325,14 +330,16 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
                           <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
-                          <TableCell className="text-right pr-4">
-                              <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
-                          </TableCell>
+                          {!isReadOnly && (
+                            <TableCell className="text-right pr-4">
+                                <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                            </TableCell>
+                          )}
                       </TableRow>
                   ))
                   ) : (
                   <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24">
+                      <TableCell colSpan={isReadOnly ? 5 : 7} className="text-center h-24">
                           No transactions found for the selected date range.
                       </TableCell>
                   </TableRow>
@@ -379,3 +386,5 @@ export function TransactionsDataTable({ transactions, customerId, customer }: Tr
 
     
 }
+
+    

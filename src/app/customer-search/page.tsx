@@ -109,6 +109,7 @@ export default function CustomerSearchPage() {
                                     transactions={transactions} 
                                     customerId={customer.id.toString()}
                                     customer={customer}
+                                    isReadOnly={true}
                                 />
                             </Card>
                         </div>
@@ -118,3 +119,5 @@ export default function CustomerSearchPage() {
         </main>
     );
 }
+
+    
