@@ -58,6 +58,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
     const [isClient, setIsClient] = useState(false);
     const isMobile = useIsMobile();
 
+
     useEffect(() => {
         // This ensures the date is only set on the client, preventing hydration mismatch
         setDateRange({
@@ -300,9 +301,9 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                             />
                         </TableHead>
                     )}
-                  <TableHead className="w-[120px]">Date</TableHead>
+                  <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Payment Method</TableHead>
+                  <TableHead>Payment Method</TableHead>
                   <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   {!isReadOnly && <TableHead className="w-[50px] text-right pr-4">Actions</TableHead>}
@@ -321,13 +322,15 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                                 />
                             </TableCell>
                           )}
-                          <TableCell className="font-medium">{new Date(tx.date).toLocaleDateString()}</TableCell>
+                          <TableCell className="font-medium">
+                            {new Date(tx.date).toLocaleDateString()}
+                          </TableCell>
                           <TableCell>
                               <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'} >
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">
+                          <TableCell>
                               <div className="flex items-center gap-2">
                                 {paymentMethodIcons[tx.meta.payment_method] || null}
                                 {tx.meta.payment_method}

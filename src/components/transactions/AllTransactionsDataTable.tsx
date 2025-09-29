@@ -137,19 +137,21 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                     />
                     </PopoverContent>
                 </Popover>
-                <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Download PDF
-                </Button>
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        Download PDF
+                    </Button>
+                </div>
             </div>
             <div className="overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[120px]">Date</TableHead>
+                        <TableHead className="w-[150px]">Date</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead className="hidden md:table-cell">Payment Method</TableHead>
+                        <TableHead>Payment Method</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -157,7 +159,9 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                     {filteredTransactions.length > 0 ? (
                     filteredTransactions.map(tx => (
                         <TableRow key={tx.id}>
-                            <TableCell>{new Date(tx.date).toLocaleDateString()}</TableCell>
+                             <TableCell className="font-medium">
+                                {new Date(tx.date).toLocaleDateString()}
+                            </TableCell>
                             <TableCell>
                                 {tx.customer ? (
                                     <Button variant="link" asChild className="p-0 h-auto font-normal text-base -ml-2">
@@ -175,7 +179,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.meta.transaction_type}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell>
                                 <div className='flex items-center gap-2'>
                                     {paymentMethodIcons[tx.meta.payment_method] || null}
                                     {tx.meta.payment_method}
