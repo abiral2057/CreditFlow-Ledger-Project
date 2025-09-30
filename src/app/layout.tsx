@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Header } from '@/components/common/Header';
 import { cookies } from 'next/headers';
 import * as jose from 'jose';
+import { MobileFooterNav } from '@/components/common/MobileFooterNav';
 
 export const metadata: Metadata = {
   title: 'CreditFlow Ledger',
@@ -47,7 +48,10 @@ export default async function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Header isLoggedIn={isLoggedIn} username={username} isAdmin={isAdmin} />
-        {children}
+        <div className="flex-1 pb-20 md:pb-0">
+            {children}
+        </div>
+        {isLoggedIn && <MobileFooterNav />}
         <Toaster />
       </body>
     </html>

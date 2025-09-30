@@ -80,8 +80,8 @@ export default function LoginPage() {
 
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <main className="flex-1 flex flex-col items-center justify-center p-4 bg-muted/40">
+      <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="text-center">
           <Link href="/" className="flex justify-center items-center gap-3 text-primary mb-4 hover:opacity-80 transition-opacity">
             <WalletCards className="h-8 w-8 text-accent" />
