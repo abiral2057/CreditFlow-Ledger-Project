@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
+import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Coins, CreditCard, Landmark } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,12 @@ type TransactionsDataTableProps = {
 }
 
 const ITEMS_PER_PAGE = 10;
+
+const paymentMethodIcons: Record<string, React.ReactNode> = {
+    'Cash': <Coins className="h-4 w-4" />,
+    'Card': <CreditCard className="h-4 w-4" />,
+    'Bank Transfer': <Landmark className="h-4 w-4" />,
+};
 
 export function TransactionsDataTable({ transactions, customerId, customer, isReadOnly = false }: TransactionsDataTableProps) {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -299,8 +305,10 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                     )}
                   <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead className="hidden sm:table-cell">Payment Method</TableHead>
+                  <TableHead className="hidden lg:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  {!isReadOnly && <TableHead className="w-[120px] text-right pr-4">Actions</TableHead>}
+                  <TableHead className="w-[120px] text-right pr-4">Actions</TableHead>
                   </TableRow>
               </TableHeader>
               <TableBody>
@@ -324,30 +332,35 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                              <div className="flex items-center gap-2">
+                                {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
+                                {tx.meta.payment_method}
+                              </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell truncate max-w-[150px]">
+                            {tx.meta.notes || '-'}
+                          </TableCell>
                           <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
-                          {!isReadOnly && (
-                            <TableCell className="text-right pr-2">
-                                <div className="flex justify-end items-center">
-                                    <ViewTransactionDialog transaction={tx} />
-                                    <EditTransactionForm transaction={tx} customerId={customerId} />
-                                    <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
-                                </div>
-                            </TableCell>
-                          )}
-                           {isReadOnly && (
-                            <TableCell className="text-right pr-2">
-                                <div className="flex justify-end items-center">
-                                    <ViewTransactionDialog transaction={tx} />
-                                </div>
-                            </TableCell>
-                          )}
+                          
+                          <TableCell className="text-right pr-2">
+                              <div className="flex justify-end items-center">
+                                  <ViewTransactionDialog transaction={tx} />
+                                  {!isReadOnly && (
+                                    <>
+                                      <EditTransactionForm transaction={tx} customerId={customerId} />
+                                      <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                                    </>
+                                  )}
+                              </div>
+                          </TableCell>
                       </TableRow>
                   ))
                   ) : (
                   <TableRow>
-                      <TableCell colSpan={isReadOnly ? 4 : 5} className="text-center h-24">
+                      <TableCell colSpan={isReadOnly ? 5 : 7} className="text-center h-24">
                           No transactions found for the selected date range.
                       </TableCell>
                   </TableRow>
