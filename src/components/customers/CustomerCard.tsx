@@ -27,7 +27,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
           <div className="flex justify-between items-start">
             <div className="flex-1">
                 <CardTitle className="flex items-center gap-2 font-headline text-primary">
-                    <User className="h-5 w-5 text-accent" />
+                    <User className="h-5 w-5 text-foreground" />
                     {customer.meta.name || customer.title.rendered}
                 </CardTitle>
                 <CardDescription className="flex items-center gap-2 pt-1">
@@ -55,7 +55,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
                 <span>{customer.meta.phone || 'No phone number'}</span>
             </div>
             <div className="text-right mt-4">
-                <Button asChild variant="ghost" size="sm" className="text-accent group-hover:bg-accent/10">
+                <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary-foreground hover:bg-primary group-hover:bg-primary group-hover:text-primary-foreground">
                     <Link href={`/customers/${customer.id}`}>
                         View Ledger
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

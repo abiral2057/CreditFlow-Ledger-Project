@@ -108,7 +108,7 @@ export default function TwoFactorPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-3 text-primary mb-4">
-            <ShieldCheck className="h-8 w-8 text-accent" />
+            <ShieldCheck className="h-8 w-8 text-foreground" />
             <h1 className="text-3xl font-headline font-bold">Two-Factor Authentication</h1>
           </div>
           <CardTitle className="text-2xl">Enter Your Code</CardTitle>

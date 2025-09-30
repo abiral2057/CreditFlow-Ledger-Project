@@ -49,7 +49,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
         <Card className="mb-8 shadow-sm">
             <CardHeader>
                 <CardTitle className="text-3xl font-headline text-primary flex items-center gap-3">
-                    <User className="h-8 w-8 text-accent"/>
+                    <User className="h-8 w-8 text-foreground"/>
                     {customer.meta.name || customer.title.rendered}
                 </CardTitle>
                 <CardDescription>Ledger details and transaction history.</CardDescription>
@@ -119,4 +119,3 @@ export default async function CustomerPage({ params }: { params: { id: string } 
     </div>
   );
 }
-

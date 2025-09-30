@@ -153,7 +153,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                         <TableHead className="w-[150px]">Date</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead className="hidden sm:table-cell">Payment Method</TableHead>
+                        <TableHead>Payment Method</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="w-[50px] text-right pr-4">View</TableHead>
                     </TableRow>
@@ -169,7 +169,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.customer ? (
                                     <Button variant="link" asChild className="p-0 h-auto font-normal text-base -ml-2">
                                         <Link href={`/customers/${tx.customer.id}`} className="flex items-center gap-2">
-                                            <User className="h-4 w-4 text-accent" />
+                                            <User className="h-4 w-4 text-foreground" />
                                             {tx.customer.meta.name}
                                         </Link>
                                     </Button>
@@ -182,7 +182,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.meta.transaction_type}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell>
                                 <div className="flex items-center gap-2">
                                     {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
                                     {tx.meta.payment_method}
