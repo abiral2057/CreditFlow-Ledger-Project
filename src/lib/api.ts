@@ -89,7 +89,8 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const parentId = tx.meta?.related_customer?.toString();
+      // The meta.related_customer field is an array of strings, so we take the first element.
+      const parentId = Array.isArray(tx.meta?.related_customer) ? tx.meta?.related_customer[0] : tx.meta?.related_customer?.toString();
       if (!parentId) return null;
       const customer = customerMap.get(parentId);
       
@@ -190,11 +191,10 @@ export const createTransaction = async (data: { customerId: string; date: string
       meta: {
         transaction_type: data.transaction_type,
         amount: data.amount,
-        transaction_date: data.date,
+        date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
-        customer_code: '', // This can be left empty if relation is primary
-        related_customer: data.customerId // Set the relationship field
+        related_customer: data.customerId
       },
     }),
   });
@@ -237,7 +237,7 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
     meta: {
       transaction_type: data.transaction_type,
       amount: data.amount,
-      transaction_date: data.date,
+      date: data.date,
       payment_method: data.payment_method,
       notes: data.notes
     }
