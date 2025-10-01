@@ -44,7 +44,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
                 <DropdownMenuContent align="end">
                     <EditCustomerForm customer={customer} />
                     <DropdownMenuSeparator />
-                    <DeleteCustomerButton customerId={customer.id} />
+                    <DeleteCustomerButton customerId={customer.id.toString()} />
                 </DropdownMenuContent>
             </DropdownMenu>
           </div>

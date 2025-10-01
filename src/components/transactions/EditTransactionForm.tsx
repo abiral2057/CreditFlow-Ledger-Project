@@ -47,7 +47,7 @@ const formSchema = z.object({
   }),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount').min(1, 'Amount is required.'),
   transaction_type: z.enum(['Credit', 'Debit']),
-  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer']),
+  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Online Payment']),
   notes: z.string().optional(),
 });
 
@@ -75,7 +75,7 @@ export function EditTransactionForm({ transaction, customerId }: EditTransaction
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await updateTransaction(transaction.id, customerId, { ...values, date: values.date.toISOString() });
+      await updateTransaction(transaction.id.toString(), customerId, { ...values, date: values.date.toISOString() });
       toast({
         title: 'Success',
         description: 'Transaction updated successfully.',
@@ -184,6 +184,7 @@ export function EditTransactionForm({ transaction, customerId }: EditTransaction
                             <SelectItem value="Cash">Cash</SelectItem>
                             <SelectItem value="Card">Card</SelectItem>
                             <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                            <SelectItem value="Online Payment">Online Payment</SelectItem>
                         </SelectContent>
                     </Select>
                   <FormMessage />

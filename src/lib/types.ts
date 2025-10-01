@@ -1,7 +1,6 @@
 
-
 export interface Customer {
-  id: string;
+  id: number;
   title: {
     rendered: string;
   };
@@ -15,7 +14,7 @@ export interface Customer {
 }
 
 export interface Transaction {
-  id: string;
+  id: number;
   date: string;
   title: {
       rendered: string;
@@ -23,9 +22,11 @@ export interface Transaction {
   meta: {
     transaction_type: 'Credit' | 'Debit';
     amount: string;
-    payment_method: 'Cash' | 'Card' | 'Bank Transfer';
+    transaction_date: string;
+    payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment';
     notes: string;
-    [key: string]: any; 
+    customer_code: string;
+    related_customer: number;
   };
 }
 

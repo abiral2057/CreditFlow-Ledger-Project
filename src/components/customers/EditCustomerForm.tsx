@@ -58,7 +58,7 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await updateCustomer(customer.id, values);
+      await updateCustomer(customer.id.toString(), values);
       toast({
         title: 'Success',
         description: 'Customer updated successfully.',

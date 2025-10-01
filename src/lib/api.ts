@@ -5,6 +5,7 @@ import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
+const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v2';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
@@ -13,12 +14,6 @@ const getAuthHeaders = () => ({
     'Authorization': 'Basic ' + Buffer.from(`${WP_APP_USER}:${WP_APP_PASSWORD}`).toString('base64'),
 });
 
-// Helper function to safely extract customer ID from transaction title
-const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
-    if (!transaction?.title?.rendered) return null;
-    const match = transaction.title.rendered.match(/for customer (\d+)/);
-    return match ? match[1] : null;
-}
 
 export const getAllCustomers = async (): Promise<Customer[]> => {
   const response = await fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { 
@@ -30,11 +25,7 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
     throw new Error('Failed to fetch customers');
   }
   const customers = await response.json() as Customer[];
-  return customers.sort((a, b) => {
-    const codeA = parseInt((a.meta.customer_code || 'CUST-0').split('-')[1] || '0');
-    const codeB = parseInt((b.meta.customer_code || 'CUST-0').split('-')[1] || '0');
-    return codeA - codeB;
-  });
+  return customers.sort((a, b) => (a.meta.name > b.meta.name) ? 1 : -1);
 };
 
 export const getCustomerById = async (id: string): Promise<Customer> => {
@@ -55,7 +46,8 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, {
+    // API endpoint to get transactions related to a specific customer
+    const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit&meta_key=related_customer&meta_value=${customerId}`, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
@@ -65,12 +57,7 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
         throw new Error('Failed to fetch transactions');
     }
     
-    const allTransactions: Transaction[] = await response.json() as Transaction[];
-    
-    const customerTransactions = allTransactions.filter(tx => {
-        const idFromTitle = getCustomerIdFromTitle(tx);
-        return idFromTitle === customerId;
-    });
+    const customerTransactions: Transaction[] = await response.json() as Transaction[];
 
     return customerTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -102,11 +89,9 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      if (!tx || !tx.title || !tx.title.rendered) {
-        return null; 
-      }
-      const parentId = getCustomerIdFromTitle(tx);
-      const customer = parentId ? customerMap.get(parentId) : null;
+      const parentId = tx.meta?.related_customer?.toString();
+      if (!parentId) return null;
+      const customer = customerMap.get(parentId);
       
       return {
         ...tx,
@@ -132,6 +117,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
         customer_code: data.customer_code,
         phone: data.phone,
         credit_limit: data.credit_limit,
+        notes: '',
       },
     }),
   });
@@ -144,20 +130,20 @@ export const createCustomer = async (data: { name: string; customer_code: string
   return response.json();
 };
 
-export const updateCustomer = async (id: string, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
+export const updateCustomer = async (id: string, data: Partial<Customer['meta']>) => {
   const headers = getAuthHeaders();
+  
+  const body: { title?: string; meta: Partial<Customer['meta']> } = {
+    meta: data,
+  }
+  if (data.name) {
+    body.title = data.name;
+  }
+
   const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      title: data.name,
-      meta: {
-        name: data.name,
-        customer_code: data.customer_code,
-        phone: data.phone,
-        credit_limit: data.credit_limit,
-      },
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -187,14 +173,13 @@ export const deleteCustomer = async (id: string) => {
              throw new Error(errorText || 'Failed to delete customer.');
         }
     }
-    // The response for a successful DELETE is often empty.
-    // We return a success object to confirm the operation was accepted.
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
+export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) => {
   const headers = getAuthHeaders();
   
+  // 1. Create the transaction post
   const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -203,10 +188,13 @@ export const createTransaction = async (data: { customerId: string; date: string
       status: 'publish',
       date: data.date,
       meta: {
-        amount: data.amount,
         transaction_type: data.transaction_type,
+        amount: data.amount,
+        transaction_date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
+        customer_code: '', // This can be left empty if relation is primary
+        related_customer: data.customerId // Set the relationship field
       },
     }),
   });
@@ -218,6 +206,27 @@ export const createTransaction = async (data: { customerId: string; date: string
   }
 
   const newTransaction = await transactionResponse.json() as Transaction;
+  
+  // 2. Link it via JetEngine relation API
+  const relationResponse = await fetch(`${JET_REL_URL}/22`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+          parent_id: parseInt(data.customerId),
+          child_id: newTransaction.id,
+          context: 'parent',
+          store_items_type: 'update',
+      })
+  });
+
+  if (!relationResponse.ok) {
+      const error = await relationResponse.json();
+      console.error('Failed to link transaction to customer:', error);
+      // Optional: Delete the orphaned transaction post if linking fails
+      await deleteTransaction(newTransaction.id.toString());
+      throw new Error((error as any).message || 'Failed to link transaction to customer.');
+  }
+
   return newTransaction;
 };
 
@@ -226,8 +235,9 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
   
   const body: {meta: any, date?:string} = {
     meta: {
-      amount: data.amount,
       transaction_type: data.transaction_type,
+      amount: data.amount,
+      transaction_date: data.date,
       payment_method: data.payment_method,
       notes: data.notes
     }
@@ -265,5 +275,3 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
-
-    

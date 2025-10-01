@@ -4,7 +4,7 @@
 import type { TransactionWithCustomer } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
-import { User, CreditCard, Coins, Landmark } from "lucide-react";
+import { User, CreditCard, Coins, Landmark, Banknote } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "../ui/button";
 
@@ -16,6 +16,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Cash': <Coins className="h-4 w-4 text-muted-foreground" />,
     'Card': <CreditCard className="h-4 w-4 text-muted-foreground" />,
     'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
+    'Online Payment': <Banknote className="h-4 w-4 text-muted-foreground" />,
 };
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {

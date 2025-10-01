@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Coins, CreditCard, Landmark } from "lucide-react";
+import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Coins, CreditCard, Landmark, Banknote } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +48,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Cash': <Coins className="h-4 w-4" />,
     'Card': <CreditCard className="h-4 w-4" />,
     'Bank Transfer': <Landmark className="h-4 w-4" />,
+    'Online Payment': <Banknote className="h-4 w-4" />,
 };
 
 export function TransactionsDataTable({ transactions, customerId, customer, isReadOnly = false }: TransactionsDataTableProps) {
@@ -93,7 +94,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     const handleSelectAll = (checked: boolean | 'indeterminate') => {
         if (checked === true) {
-            setSelectedRows(paginatedTransactions.map(tx => tx.id));
+            setSelectedRows(paginatedTransactions.map(tx => tx.id.toString()));
         } else {
             setSelectedRows([]);
         }
@@ -212,7 +213,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
     };
 
 
-    const isAllSelectedInPage = selectedRows.length > 0 && paginatedTransactions.every(tx => selectedRows.includes(tx.id));
+    const isAllSelectedInPage = selectedRows.length > 0 && paginatedTransactions.every(tx => selectedRows.includes(tx.id.toString()));
     const isIndeterminate = selectedRows.length > 0 && !isAllSelectedInPage;
 
     if (!isClient) {
@@ -310,12 +311,12 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
               <TableBody>
                   {paginatedTransactions.length > 0 ? (
                   paginatedTransactions.map(tx => (
-                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id) && "selected"} className="hover:bg-muted/50">
+                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id.toString()) && "selected"} className="hover:bg-muted/50">
                           {!isReadOnly && (
                             <TableCell className="px-4">
                                 <Checkbox 
-                                    checked={selectedRows.includes(tx.id)}
-                                    onCheckedChange={(checked) => handleSelectRow(tx.id, !!checked)}
+                                    checked={selectedRows.includes(tx.id.toString())}
+                                    onCheckedChange={(checked) => handleSelectRow(tx.id.toString(), !!checked)}
                                     aria-label={`Select row ${tx.id}`}
                                 />
                             </TableCell>
@@ -347,7 +348,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                                   {!isReadOnly && (
                                     <>
                                       <EditTransactionForm transaction={tx} customerId={customerId} />
-                                      <DeleteTransactionButton transactionId={tx.id} customerId={customerId} />
+                                      <DeleteTransactionButton transactionId={tx.id.toString()} customerId={customerId} />
                                     </>
                                   )}
                               </div>
@@ -388,7 +389,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                     This will permanently delete the selected {selectedRows.length} transaction(s).
-                </AlertDialogDescription>
+                </Description>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
