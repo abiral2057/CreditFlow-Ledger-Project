@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import 'server-only';
@@ -187,7 +188,6 @@ export const deleteCustomer = async (id: number) => {
 export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   const headers = getAuthHeaders();
   
-  // 1. Create the transaction post
   const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -211,26 +211,6 @@ export const createTransaction = async (data: { customerId: string; date: string
   }
 
   const newTransaction = await transactionResponse.json() as Transaction;
-
-  // 2. Create the relationship between customer and transaction
-  const relationshipResponse = await fetch(`${WP_REL_API_URL}/relationships`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-          "parent_id": data.customerId,
-          "child_id": newTransaction.id,
-          "name": "customer-to-transaction"
-      })
-  });
-
-  if (!relationshipResponse.ok) {
-      const error = await relationshipResponse.json();
-      console.error('Failed to create relationship:', error);
-      // Optional: Delete the transaction if relationship fails?
-      await deleteTransaction(newTransaction.id);
-      throw new Error((error as any).message || 'Failed to link transaction to customer.');
-  }
-
   return newTransaction;
 };
 
