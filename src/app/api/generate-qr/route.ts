@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
   try {
     const otpauth_url = speakeasy.otpauthURL({
         secret: TOTP_SECRET,
-        label: encodeURIComponent(`CreditFlow:${AUTH_EMAIL}`),
-        issuer: 'CreditFlow Ledger',
+        label: encodeURIComponent(`udharibook:${AUTH_EMAIL}`),
+        issuer: 'udharibook',
         encoding: 'base32'
     });
 

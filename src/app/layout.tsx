@@ -8,7 +8,7 @@ import { jwtVerify } from 'jose';
 import { MobileFooterNav } from '@/components/common/MobileFooterNav';
 
 export const metadata: Metadata = {
-  title: 'CreditFlow Ledger',
+  title: 'udharibook',
   description: 'Customer ledger system for tracking credit and debit.',
 };
 

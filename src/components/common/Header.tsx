@@ -55,7 +55,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
               <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
                 <WalletCards className="h-7 w-7 text-foreground" />
-                <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+                <h1 className="text-2xl font-headline font-bold tracking-tight">udharibook</h1>
               </Link>
               <div className="flex items-center gap-2">
                 <nav className="hidden md:flex items-center gap-2">
@@ -91,7 +91,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                         <div className="flex flex-col gap-4 py-8">
                             <Link href="/" className="flex items-center gap-3 text-primary mb-4 px-4">
                                 <WalletCards className="h-7 w-7 text-foreground" />
-                                <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+                                <h1 className="text-2xl font-headline font-bold tracking-tight">udharibook</h1>
                             </Link>
                             <nav className="flex flex-col gap-2">
                                 {publicNavLinks.map((link) => {
@@ -128,7 +128,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/dashboard" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
           <WalletCards className="h-7 w-7 text-foreground" />
-          <h1 className="text-2xl font-headline font-bold tracking-tight">CreditFlow</h1>
+          <h1 className="text-2xl font-headline font-bold tracking-tight">udharibook</h1>
         </Link>
         
         <nav className="hidden md:flex items-center gap-2">
