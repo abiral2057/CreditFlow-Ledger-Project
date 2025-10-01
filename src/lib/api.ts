@@ -174,7 +174,7 @@ export const deleteCustomer = async (id: string) => {
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string; }) => {
+export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string; customer_code: string; }) => {
   const headers = getAuthHeaders();
   
   const transactionResponse = await fetch(`${WP_API_URL}transactions`, {
@@ -191,6 +191,7 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         related_customer: parseInt(data.customerId),
+        customer_code: data.customer_code,
       },
     }),
   });
@@ -206,7 +207,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; method: string; notes: string; title: string; }>) {
+export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; method: string; notes: string; title: string; customer_code: string; }>) {
   const headers = getAuthHeaders();
   
   const body: {meta: any, date?:string, title?: string} = {
@@ -215,7 +216,8 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
       amount: data.amount,
       transaction_date: data.date,
       method: data.method,
-      notes: data.notes
+      notes: data.notes,
+      customer_code: data.customer_code,
     }
   };
 

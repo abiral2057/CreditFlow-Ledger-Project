@@ -69,8 +69,9 @@ export async function createTransaction(data: { customerId: string, date: string
     try {
       const customer = await getCustomerById(data.customerId);
       const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;
+      const customer_code = customer.meta.customer_code;
       
-      const newTransaction = await apiCreateTransaction({ ...data, title });
+      const newTransaction = await apiCreateTransaction({ ...data, title, customer_code });
       revalidateTag(`transactions-for-${data.customerId}`);
       revalidateAll();
       return newTransaction;
@@ -84,8 +85,9 @@ export async function updateTransaction(transactionId: string, customerId: strin
     try {
       const customer = await getCustomerById(customerId);
       const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;
+      const customer_code = customer.meta.customer_code;
 
-      const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, title });
+      const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, title, customer_code });
       revalidateTag(`transactions-for-${customerId}`);
       revalidateAll();
       return updatedTransaction;
