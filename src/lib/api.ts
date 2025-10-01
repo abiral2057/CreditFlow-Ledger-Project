@@ -4,8 +4,10 @@
 
 import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
+import fetch from 'node-fetch';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
+const WP_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v1';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
@@ -30,8 +32,8 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
     console.error('Failed to fetch customers:', await response.text());
     throw new Error('Failed to fetch customers');
   }
-  const customers = await response.json();
-  return customers.sort((a: Customer, b: Customer) => {
+  const customers = await response.json() as Customer[];
+  return customers.sort((a, b) => {
     const codeA = parseInt((a.meta.customer_code || 'CUST-0').split('-')[1] || '0');
     const codeB = parseInt((b.meta.customer_code || 'CUST-0').split('-')[1] || '0');
     return codeA - codeB;
@@ -50,7 +52,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
     console.error('Failed to fetch customer:', await response.text());
     throw new Error('Failed to fetch customer');
   }
-  const customer = await response.json();
+  const customer = await response.json() as Customer;
   return customer;
 };
 
@@ -66,7 +68,7 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
         throw new Error('Failed to fetch transactions');
     }
     
-    const allTransactions: Transaction[] = await response.json();
+    const allTransactions: Transaction[] = await response.json() as Transaction[];
     
     const customerTransactions = allTransactions.filter(tx => {
         const idFromTitle = getCustomerIdFromTitle(tx);
@@ -91,8 +93,8 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
     if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
 
-    customers = await customersRes.json();
-    allTransactions = await transactionsRes.json();
+    customers = await customersRes.json() as Customer[];
+    allTransactions = await transactionsRes.json() as Transaction[];
 
   } catch (error) {
       console.error("Error fetching initial data for getAllTransactions", error);
@@ -140,7 +142,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
   if (!response.ok) {
     const error = await response.json();
     console.error('Failed to create customer:', error);
-    throw new Error(error.message || 'Failed to create customer');
+    throw new Error((error as any).message || 'Failed to create customer');
   }
   return response.json();
 };
@@ -164,7 +166,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
   if (!response.ok) {
     const error = await response.json();
     console.error('Failed to update customer:', error);
-    throw new Error(error.message || 'Failed to update customer');
+    throw new Error((error as any).message || 'Failed to update customer');
   }
   return response.json();
 }
@@ -179,14 +181,16 @@ export const deleteCustomer = async (id: number) => {
     if (!response.ok) {
         const error = await response.json();
         console.error('Failed to delete customer:', error);
-        throw new Error(error.message || 'Failed to delete customer.');
+        throw new Error((error as any).message || 'Failed to delete customer.');
     }
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: number; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
+export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) => {
   const headers = getAuthHeaders();
-  const response = await fetch(`${WP_API_URL}/transactions`, {
+  
+  // 1. Create the transaction post
+  const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -202,13 +206,33 @@ export const createTransaction = async (data: { customerId: number; date: string
     }),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!transactionResponse.ok) {
+    const error = await transactionResponse.json();
     console.error('Failed to create transaction post:', error);
-    throw new Error(error.message || 'Failed to create transaction post');
+    throw new Error((error as any).message || 'Failed to create transaction post');
   }
 
-  const newTransaction = await response.json();
+  const newTransaction = await transactionResponse.json() as Transaction;
+
+  // 2. Create the relationship between customer and transaction
+  const relationshipResponse = await fetch(`${WP_REL_API_URL}/relationships`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+          "parent_id": data.customerId,
+          "child_id": newTransaction.id,
+          "name": "customer-to-transaction"
+      })
+  });
+
+  if (!relationshipResponse.ok) {
+      const error = await relationshipResponse.json();
+      console.error('Failed to create relationship:', error);
+      // Optional: Delete the transaction if relationship fails?
+      await deleteTransaction(newTransaction.id);
+      throw new Error((error as any).message || 'Failed to link transaction to customer.');
+  }
+
   return newTransaction;
 };
 
@@ -237,7 +261,7 @@ export async function updateTransaction(transactionId: number, data: Partial<{ d
   if (!response.ok) {
     const error = await response.json();
     console.error('Failed to update transaction:', error);
-    throw new Error(error.message || 'Failed to update transaction');
+    throw new Error((error as any).message || 'Failed to update transaction');
   }
   return response.json();
 }
@@ -252,7 +276,7 @@ export const deleteTransaction = async (transactionId: number) => {
     if (!response.ok) {
         const error = await response.json();
         console.error('Failed to delete transaction:', error);
-        throw new Error(error.message || 'Failed to delete transaction.');
+        throw new Error((error as any).message || 'Failed to delete transaction.');
     }
     return { success: true };
 }

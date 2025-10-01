@@ -119,7 +119,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
             <h3 className="text-2xl font-headline font-bold">Transaction History</h3>
-            <AddTransactionForm customerId={customer.id} />
+            <AddTransactionForm customerId={id} />
         </div>
         <Card className="shadow-sm">
           <TransactionsDataTable transactions={transactions} customerId={id} customer={customer} />

@@ -52,7 +52,7 @@ const formSchema = z.object({
 });
 
 type AddTransactionFormProps = {
-    customerId: number;
+    customerId: string;
 }
 
 export function AddTransactionForm({ customerId }: AddTransactionFormProps) {

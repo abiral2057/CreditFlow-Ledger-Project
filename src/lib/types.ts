@@ -32,32 +32,3 @@ export interface Transaction {
 export interface TransactionWithCustomer extends Transaction {
   customer: Customer | null;
 }
-
-// Type for the response from /jet-rel/22/children/{_ID}
-export interface JetRelTransactionResponse {
-  ID: number;
-  parent_id: number;
-  child_id: number;
-  child_object: {
-    id: number;
-    date: string;
-    title: {
-      rendered: string;
-    };
-    meta: {
-      transaction_type: 'Credit' | 'Debit';
-      amount: string;
-      payment_method: 'Cash' | 'Card' | 'Bank Transfer';
-      notes: string;
-    };
-  }
-}
-
-export interface WPAuthResponse {
-  success?: boolean;
-  token?: string;
-  user_email?: string;
-  user_nicename?: string;
-  user_display_name?: string;
-  message?: string;
-}
