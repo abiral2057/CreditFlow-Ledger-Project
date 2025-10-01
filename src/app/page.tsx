@@ -18,6 +18,6 @@ export default async function RootPage() {
       }
     }
     
-    // If not logged in, redirect to the new public search page
-    redirect('/customer-search');
+    // If not logged in, redirect to the admin customers page (which will be caught by middleware)
+    redirect('/customers');
 }
