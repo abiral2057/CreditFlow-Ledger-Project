@@ -88,10 +88,9 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const parentIdArray = tx.meta?.related_customer;
-      if (!Array.isArray(parentIdArray) || parentIdArray.length === 0) return null;
+      const parentId = tx.meta?.related_customer?.toString();
+      if (!parentId) return null;
 
-      const parentId = parentIdArray[0].toString();
       const customer = customerMap.get(parentId);
       
       if (!customer) return null;
@@ -189,10 +188,10 @@ export const createTransaction = async (data: { customerId: string; date: string
       meta: {
         transaction_type: data.transaction_type,
         amount: data.amount,
-        date: data.date,
+        transaction_date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
-        related_customer: [parseInt(data.customerId)],
+        related_customer: parseInt(data.customerId),
       },
     }),
   });
@@ -205,24 +204,6 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
-  const relationResponse = await fetch(`${JET_REL_URL}22`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-          parent_id: parseInt(data.customerId),
-          child_id: newTransaction.id,
-          context: 'parent',
-          store_items_type: 'update',
-      })
-  });
-
-  if (!relationResponse.ok) {
-      const error = await relationResponse.json();
-      console.error('Failed to link transaction to customer:', error);
-      await deleteTransaction(newTransaction.id.toString());
-      throw new Error((error as any).message || 'Failed to link transaction to customer.');
-  }
-
   return newTransaction;
 };
 
@@ -233,7 +214,7 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
     meta: {
       transaction_type: data.transaction_type,
       amount: data.amount,
-      date: data.date,
+      transaction_date: data.date,
       payment_method: data.payment_method,
       notes: data.notes
     }
