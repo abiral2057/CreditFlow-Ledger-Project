@@ -48,12 +48,6 @@ export function Header() {
     }
   };
 
-  const isAuthPage = ['/login', '/2fa', '/setup-2fa'].includes(pathname);
-
-  if (isAuthPage) {
-     return null;
-  }
-  
   const renderNavLinks = (links: typeof navLinks, isSheet: boolean = false) => {
     return links.map((link) => {
         const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
