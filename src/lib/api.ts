@@ -196,7 +196,6 @@ export const createTransaction = async (data: { customerId: string; date: string
         payment_method: data.payment_method,
         notes: data.notes || '',
         related_customer: [parseInt(data.customerId)],
-        customer_code: ''
       },
     }),
   });
