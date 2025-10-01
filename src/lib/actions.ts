@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -48,15 +47,14 @@ export async function updateCustomer(id: number, data: Partial<{ name: string; c
 
 export async function deleteCustomer(id: number) {
     try {
-        const transactions = await getTransactionsForCustomer(id.toString());
-        await Promise.all(transactions.map(tx => apiDeleteTransaction(tx.id)));
+        // The API's deleteCustomer function will handle cascading deletes of transactions.
         await apiDeleteCustomer(id);
 
         revalidateTag(`customers/${id}`);
         revalidateAll();
     } catch (error) {
         console.error('Action Error: deleteCustomer', error);
-        throw new Error((error as Error).message || 'Failed to delete customer and their transactions.');
+        throw new Error((error as Error).message || 'Failed to delete customer.');
     }
 }
 

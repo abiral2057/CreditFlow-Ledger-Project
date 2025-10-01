@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import 'server-only';
@@ -172,16 +171,25 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
 
 export const deleteCustomer = async (id: number) => {
     const headers = getAuthHeaders();
+    // The WordPress backend is set to cascade delete, so deleting the customer
+    // will also delete all of its related transaction posts.
     const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        console.error('Failed to delete customer:', error);
-        throw new Error((error as any).message || 'Failed to delete customer.');
+        const errorText = await response.text();
+        console.error('Failed to delete customer:', errorText);
+        try {
+            const errorJson = JSON.parse(errorText);
+            throw new Error((errorJson as any).message || 'Failed to delete customer.');
+        } catch {
+             throw new Error(errorText || 'Failed to delete customer.');
+        }
     }
+    // The response for a successful DELETE is often empty.
+    // We return a success object to confirm the operation was accepted.
     return { success: true };
 }
 
