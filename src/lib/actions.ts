@@ -65,7 +65,7 @@ export async function deleteCustomer(id: string) {
 }
 
 
-export async function createTransaction(data: { customerId: string, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
+export async function createTransaction(data: { customerId: string, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
     try {
       const customer = await getCustomerById(data.customerId);
       const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;
@@ -80,7 +80,7 @@ export async function createTransaction(data: { customerId: string, date: string
     }
 }
 
-export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
+export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
     try {
       const customer = await getCustomerById(customerId);
       const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;

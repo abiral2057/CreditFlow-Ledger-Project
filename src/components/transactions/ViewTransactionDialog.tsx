@@ -59,9 +59,9 @@ export function ViewTransactionDialog({ transaction }: ViewTransactionDialogProp
                     </Badge>
                 </div>
                 <div className="flex items-center gap-3">
-                    {paymentMethodIcons[transaction.meta.payment_method] || <CreditCard className="h-4 w-4 text-muted-foreground" />}
+                    {paymentMethodIcons[transaction.meta.method] || <CreditCard className="h-4 w-4 text-muted-foreground" />}
                     <span className="text-sm font-medium">Payment Method:</span>
-                    <span className="text-sm text-muted-foreground ml-auto">{transaction.meta.payment_method}</span>
+                    <span className="text-sm text-muted-foreground ml-auto">{transaction.meta.method}</span>
                 </div>
             </div>
             {transaction.meta.notes && (

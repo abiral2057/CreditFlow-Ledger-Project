@@ -68,7 +68,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
             new Date(tx.date).toLocaleDateString(),
             tx.customer?.meta.name || 'N/A',
             tx.meta.transaction_type,
-            tx.meta.payment_method,
+            tx.meta.method,
             tx.meta.notes,
             `${tx.meta.transaction_type === 'Credit' ? '+' : '-'} ${formatAmount(tx.meta.amount)}`
         ]);
@@ -181,8 +181,8 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                             </TableCell>
                             <TableCell className="table-cell">
                                 <div className="flex items-center gap-2">
-                                    {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
-                                    {tx.meta.payment_method}
+                                    {paymentMethodIcons[tx.meta.method] || <CreditCard className="h-4 w-4" />}
+                                    {tx.meta.method}
                                 </div>
                             </TableCell>
                             <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>

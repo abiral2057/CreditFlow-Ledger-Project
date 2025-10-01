@@ -19,7 +19,7 @@ const COLORS = {
 export function PaymentMethodChart({ transactions }: PaymentMethodChartProps) {
   const data = useMemo(() => {
     const counts = transactions.reduce((acc, tx) => {
-      const method = tx.meta.payment_method || 'N/A';
+      const method = tx.meta.method || 'N/A';
       acc[method] = (acc[method] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);

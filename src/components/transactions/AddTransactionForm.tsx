@@ -47,7 +47,7 @@ const formSchema = z.object({
   }),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount').min(1, 'Amount is required.'),
   transaction_type: z.enum(['Credit', 'Debit']),
-  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Online Payment']),
+  method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Online Payment']),
   notes: z.string().optional(),
 });
 
@@ -66,7 +66,7 @@ export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
       date: new Date(),
       amount: '',
       transaction_type: 'Credit',
-      payment_method: 'Cash',
+      method: 'Cash',
       notes: '',
     },
   });
@@ -172,7 +172,7 @@ export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
             />
              <FormField
               control={form.control}
-              name="payment_method"
+              name="method"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Payment Method</FormLabel>

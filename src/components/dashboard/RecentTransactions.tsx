@@ -68,8 +68,8 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                                     {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                                 </p>
                                 <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                                    {paymentMethodIcons[tx.meta.payment_method]}
-                                    <span>{tx.meta.payment_method}</span>
+                                    {paymentMethodIcons[tx.meta.method]}
+                                    <span>{tx.meta.method}</span>
                                 </div>
                             </div>
                         </li>
