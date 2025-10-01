@@ -46,7 +46,6 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    // API endpoint to get transactions related to a specific customer
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit&meta_key=related_customer&meta_value=${customerId}`, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
@@ -70,7 +69,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   try {
     const [customersRes, transactionsRes] = await Promise.all([
-      fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
+      fetch(`${WP_APIURL}/customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
       fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
@@ -89,7 +88,6 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // The meta.related_customer field is an array of strings, so we take the first element.
       const parentId = Array.isArray(tx.meta?.related_customer) ? tx.meta?.related_customer[0] : tx.meta?.related_customer?.toString();
       if (!parentId) return null;
       const customer = customerMap.get(parentId);
@@ -157,8 +155,6 @@ export const updateCustomer = async (id: string, data: Partial<Customer['meta']>
 
 export const deleteCustomer = async (id: string) => {
     const headers = getAuthHeaders();
-    // The WordPress backend is set to cascade delete, so deleting the customer
-    // will also delete all of its related transaction posts.
     const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
@@ -180,7 +176,6 @@ export const deleteCustomer = async (id: string) => {
 export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) => {
   const headers = getAuthHeaders();
   
-  // 1. Create the transaction post
   const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
     method: 'POST',
     headers,
@@ -194,7 +189,7 @@ export const createTransaction = async (data: { customerId: string; date: string
         date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
-        related_customer: data.customerId
+        related_customer: data.customerId,
       },
     }),
   });
@@ -207,7 +202,6 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
-  // 2. Link it via JetEngine relation API
   const relationResponse = await fetch(`${JET_REL_URL}/22`, {
       method: 'POST',
       headers,
@@ -222,7 +216,6 @@ export const createTransaction = async (data: { customerId: string; date: string
   if (!relationResponse.ok) {
       const error = await relationResponse.json();
       console.error('Failed to link transaction to customer:', error);
-      // Optional: Delete the orphaned transaction post if linking fails
       await deleteTransaction(newTransaction.id.toString());
       throw new Error((error as any).message || 'Failed to link transaction to customer.');
   }
@@ -275,3 +268,5 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
+
+    
