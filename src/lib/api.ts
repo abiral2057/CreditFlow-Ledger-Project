@@ -58,18 +58,23 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
     }
     const customerCode = customer.meta.customer_code;
 
-    // 2. Fetch all transactions matching that customer_code
-    const response = await fetch(`${WP_API_URL}transactions?meta_key=customer_code&meta_value=${customerCode}&per_page=100&context=edit`, {
+    // 2. Fetch all transactions
+    const transactionsResponse = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, {
         headers,
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
-    if (!response.ok) {
-        console.error(`Failed to fetch transactions for customer ${customerId} using code ${customerCode}:`, await response.text());
+    if (!transactionsResponse.ok) {
+        console.error(`Failed to fetch all transactions:`, await transactionsResponse.text());
         throw new Error('Failed to fetch transactions');
     }
+
+    const allTransactions: Transaction[] = await transactionsResponse.json();
     
-    const customerTransactions: Transaction[] = await response.json() as Transaction[];
+    // 3. Filter transactions by customer_code
+    const customerTransactions = allTransactions.filter(
+        tx => tx.meta?.customer_code === customerCode
+    );
     
     return customerTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -96,15 +101,13 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
       throw error;
   }
   
-  const customerMap = new Map(customers.map(c => [c.id, c]));
+  const customerMap = new Map(customers.map(c => [c.meta.customer_code, c]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // The related customer ID is stored in the meta field.
-      const relatedCustomerId = tx.meta?.related_customer;
-      if (!relatedCustomerId) return { ...tx, customer: null };
+      if (!tx.meta?.customer_code) return { ...tx, customer: null };
 
-      const customer = customerMap.get(relatedCustomerId);
+      const customer = customerMap.get(tx.meta.customer_code);
       if (!customer) return { ...tx, customer: null };
       
       return {
@@ -203,7 +206,6 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         customer_code: data.customer_code,
-        related_customer: parseInt(data.customerId),
       },
     }),
   });
@@ -252,7 +254,6 @@ export async function updateTransaction(transactionId: string, customerId: strin
       method: data.method,
       notes: data.notes,
       customer_code: data.customer_code,
-      related_customer: parseInt(customerId),
     }
   };
 
