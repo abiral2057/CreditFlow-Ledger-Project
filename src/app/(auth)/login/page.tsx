@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { WalletCards } from 'lucide-react';
 import Link from 'next/link';
+import { SeedDataButton } from '@/components/customers/SeedDataButton';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -122,6 +123,11 @@ export default function LoginPage() {
           </Form>
         </CardContent>
       </Card>
+      {process.env.NODE_ENV === 'development' && (
+          <div className="mt-6">
+            <SeedDataButton />
+          </div>
+        )}
     </main>
   );
 }
