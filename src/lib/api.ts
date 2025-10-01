@@ -69,7 +69,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   try {
     const [customersRes, transactionsRes] = await Promise.all([
-      fetch(`${WP_APIURL}/customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
+      fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
       fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
@@ -88,16 +88,22 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const parentId = Array.isArray(tx.meta?.related_customer) ? tx.meta?.related_customer[0] : tx.meta?.related_customer?.toString();
-      if (!parentId) return null;
+      // The `related_customer` meta field from JetEngine might be an array of IDs
+      const parentIdArray = tx.meta?.related_customer;
+      if (!Array.isArray(parentIdArray) || parentIdArray.length === 0) return null;
+
+      // Assuming the first ID in the array is the correct parent
+      const parentId = parentIdArray[0].toString();
       const customer = customerMap.get(parentId);
+      
+      if (!customer) return null;
       
       return {
         ...tx,
-        customer: customer || null,
+        customer: customer,
       };
     })
-    .filter((tx): tx is TransactionWithCustomer => tx !== null && tx.customer !== null);
+    .filter((tx): tx is TransactionWithCustomer => tx !== null);
 
   return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -186,10 +192,11 @@ export const createTransaction = async (data: { customerId: string; date: string
       meta: {
         transaction_type: data.transaction_type,
         amount: data.amount,
-        date: data.date,
+        transaction_date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
-        related_customer: data.customerId,
+        related_customer: [parseInt(data.customerId)],
+        customer_code: ''
       },
     }),
   });
@@ -202,6 +209,7 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
+  // Explicitly link the transaction to the customer using JetEngine relation API
   const relationResponse = await fetch(`${JET_REL_URL}/22`, {
       method: 'POST',
       headers,
@@ -216,6 +224,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   if (!relationResponse.ok) {
       const error = await relationResponse.json();
       console.error('Failed to link transaction to customer:', error);
+      // If linking fails, we should delete the orphaned transaction
       await deleteTransaction(newTransaction.id.toString());
       throw new Error((error as any).message || 'Failed to link transaction to customer.');
   }
@@ -230,7 +239,7 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
     meta: {
       transaction_type: data.transaction_type,
       amount: data.amount,
-      date: data.date,
+      transaction_date: data.date,
       payment_method: data.payment_method,
       notes: data.notes
     }
@@ -268,5 +277,3 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
-
-    
