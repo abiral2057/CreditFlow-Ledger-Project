@@ -16,10 +16,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from '../ui/sheet';
 import React from 'react';
+import { useSession } from '@/hooks/use-session';
+import { Skeleton } from '../ui/skeleton';
 
-export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean; username?: string; isAdmin?: boolean; }) {
+export function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { session, isLoading } = useSession();
   
   const adminNavLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, exact: true },
@@ -43,13 +46,27 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
     }
   };
 
-  const isAuthPage = ['/2fa', '/setup-2fa'].includes(pathname);
+  const isAuthPage = ['/login', '/2fa', '/setup-2fa'].includes(pathname);
+
+  if (isLoading && !isAuthPage) {
+     return (
+       <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+              <Link href="/" className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+                <WalletCards className="h-7 w-7 text-foreground" />
+                <h1 className="text-2xl font-headline font-bold tracking-tight">udharibook</h1>
+              </Link>
+              <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+       </header>
+     )
+  }
 
   if (isAuthPage) {
      return null;
   }
   
-  if (!isLoggedIn) {
+  if (!session.isLoggedIn) {
      return (
        <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
@@ -164,7 +181,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
                     <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">Admin</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                        {username}
+                        {session.username}
                     </p>
                     </div>
                 </DropdownMenuLabel>

@@ -1,10 +1,24 @@
 
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 export async function GET(request: NextRequest) {
-  const session = await getIronSession(cookies(), sessionOptions);
-  return NextResponse.json(session);
+    const cookieStore = cookies();
+    const authCookie = cookieStore.get('auth');
+
+    if (!authCookie?.value) {
+        return NextResponse.json({ isLoggedIn: false });
+    }
+
+    try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+        const { payload } = await jwtVerify(authCookie.value, secret);
+        return NextResponse.json({
+            isLoggedIn: true,
+            username: payload.email as string,
+        });
+    } catch {
+        return NextResponse.json({ isLoggedIn: false });
+    }
 }
