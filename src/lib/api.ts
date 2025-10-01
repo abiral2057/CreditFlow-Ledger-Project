@@ -146,7 +146,7 @@ export const createCustomer = async (data: { name: string; customer_code: string
 
 export const updateCustomer = async (id: string, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
   const headers = getAuthHeaders();
-  const response = await fetch(`${WP_APIURL}/customers/${id}`, {
+  const response = await fetch(`${WP_API_URL}/customers/${id}`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -265,3 +265,5 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
+
+    
