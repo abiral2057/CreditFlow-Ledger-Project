@@ -1,4 +1,5 @@
 
+
 import { getCustomerById, getTransactionsForCustomer } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatAmount } from "@/lib/utils";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Transaction } from "@/lib/types";
 
-export default async function CustomerPage({ params }: { params: { id: string } }) {
+export default async function CustomerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let customer;
   let rawTransactions: Transaction[];

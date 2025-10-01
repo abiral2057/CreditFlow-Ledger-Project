@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -75,7 +76,8 @@ export async function createTransaction(data: { customerId: string, date: string
       revalidateTag(`transactions-for-${data.customerId}`);
       revalidateAll();
       return newTransaction;
-    } catch (error) {
+    } catch (error)
+ {
       console.error('Action Error: createTransaction', error);
       throw new Error((error as Error).message || 'Failed to create transaction.');
     }

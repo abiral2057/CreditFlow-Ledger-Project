@@ -1,7 +1,7 @@
 
 'use client';
 
-import { WalletCards, Users, LogOut, User as UserIcon, LayoutGrid, ShieldCheck, Menu, Search, LogIn } from 'lucide-react';
+import { WalletCards, Users, LogOut, User as UserIcon, LayoutGrid, ShieldCheck, Menu, Search, LogIn, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
     { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, exact: true },
     { href: '/customers', label: 'Customers', icon: Users, exact: false },
     { href: '/transactions', label: 'Transactions', icon: WalletCards, exact: false },
+    { href: '/top-credit', label: 'Top Credit', icon: TrendingUp, exact: true },
   ];
 
   const publicNavLinks = [

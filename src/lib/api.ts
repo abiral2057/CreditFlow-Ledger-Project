@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import 'server-only';
@@ -46,36 +47,29 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
   return customer;
 };
 
-
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const headers = getAuthHeaders();
-    
-    // 1. Fetch the customer to get their customer_code
     const customer = await getCustomerById(customerId);
-    if (!customer?.meta?.customer_code) {
-        console.error(`Could not find customer or customer_code for ID: ${customerId}`);
+    const customerCode = customer?.meta?.customer_code;
+    
+    if (!customerCode) {
+        console.warn(`Could not find customer code for customer ID: ${customerId}`);
         return [];
     }
-    const customerCode = customer.meta.customer_code;
 
-    // 2. Fetch all transactions
-    const transactionsResponse = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, {
-        headers,
+    const allTransactionsResponse = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, {
+        headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
-    if (!transactionsResponse.ok) {
-        console.error(`Failed to fetch all transactions:`, await transactionsResponse.text());
+     if (!allTransactionsResponse.ok) {
+        console.error(`Failed to fetch all transactions:`, await allTransactionsResponse.text());
         throw new Error('Failed to fetch transactions');
     }
 
-    const allTransactions: Transaction[] = await transactionsResponse.json();
-    
-    // 3. Filter transactions by customer_code
-    const customerTransactions = allTransactions.filter(
-        tx => tx.meta?.customer_code === customerCode
-    );
-    
+    const allTransactions: Transaction[] = await allTransactionsResponse.json();
+
+    const customerTransactions = allTransactions.filter(tx => tx.meta.customer_code === customerCode);
+
     return customerTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
@@ -233,17 +227,18 @@ export const createTransaction = async (data: { customerId: string; date: string
     if(!relationResponse.ok) {
       const error = await relationResponse.json();
       console.error('Failed to create transaction relationship:', error);
-      throw new Error((error as any).message || 'Failed to create transaction relationship');
+      // We don't throw here because the main transaction was created.
+      // In a real app, you might want a more robust retry/reconciliation mechanism.
     }
   } catch(error) {
      console.error('Catastrophic failure in transaction relationship creation:', error);
-     throw error;
+     // Don't re-throw, as the core transaction was created.
   }
 
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string, customer_code: string }) {
+export async function updateTransaction(transactionId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string, customer_code: string }) {
   const headers = getAuthHeaders();
   
   const body: {meta: any, date?:string, title?: string} = {

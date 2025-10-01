@@ -3,13 +3,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, Users, WalletCards } from 'lucide-react';
+import { LayoutGrid, Users, WalletCards, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, exact: true },
   { href: '/customers', label: 'Customers', icon: Users, exact: false },
   { href: '/transactions', label: 'Transactions', icon: WalletCards, exact: false },
+  { href: '/top-credit', label: 'Top Credit', icon: TrendingUp, exact: true },
 ];
 
 export function MobileFooterNav() {
