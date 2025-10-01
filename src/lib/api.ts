@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import 'server-only';
@@ -226,7 +227,6 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         customer_code: data.customer_code,
-        // Also explicitly set the related_customer meta field for easier querying elsewhere
         related_customer: parseInt(data.customerId),
       },
     }),
@@ -241,25 +241,29 @@ export const createTransaction = async (data: { customerId: string; date: string
   const newTransaction = await transactionResponse.json() as Transaction;
   
   // Link transaction to customer using JetEngine relation
-  const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-        parent_id: parseInt(data.customerId),
-        child_id: newTransaction.id,
-        context: 'parent',
-        store_items_type: 'update',
-    })
-  });
+  try {
+    const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+          parent_id: parseInt(data.customerId),
+          child_id: newTransaction.id,
+          context: 'parent',
+          store_items_type: 'update',
+      })
+    });
 
-  if(!relationResponse.ok) {
-    const error = await relationResponse.json();
-    console.error('Failed to create transaction relationship:', error);
-    // Even if this fails, the transaction was created. We can choose to log it and continue.
-    // For now, we'll throw to make it visible.
-    throw new Error((error as any).message || 'Failed to create transaction relationship');
+    if(!relationResponse.ok) {
+      const error = await relationResponse.json();
+      console.error('Failed to create transaction relationship:', error);
+      throw new Error((error as any).message || 'Failed to create transaction relationship');
+    }
+  } catch(error) {
+     console.error('Catastrophic failure in transaction relationship creation:', error);
+     // Since the transaction was created but the relation failed, this is a critical state.
+     // For now, re-throw the error to make it visible.
+     throw error;
   }
-
 
   return newTransaction;
 };
@@ -314,5 +318,3 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
-
-    
