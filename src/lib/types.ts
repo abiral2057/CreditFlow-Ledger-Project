@@ -26,10 +26,12 @@ export interface Transaction {
     method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment';
     notes: string;
     customer_code: string;
-    related_customer: number;
+    related_customer?: number; // This is now optional as we transition away from it
   };
 }
 
 export interface TransactionWithCustomer extends Transaction {
   customer: Customer | null;
 }
+
+    

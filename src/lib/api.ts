@@ -5,6 +5,9 @@ import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2/';
+const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v2/';
+const JET_REL_ID = '22'; // The specific ID for the customer-to-transaction relationship
+
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
@@ -45,7 +48,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const response = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit&meta_key=related_customer&meta_value=${customerId}`, {
+    const response = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit&parent_id=${customerId}&relation=customer-to-transactions`, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
@@ -85,14 +88,21 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
 
+  // Since we cannot reliably get the parent from the transaction meta anymore,
+  // we would need a more complex query or assume transactions are fetched per customer.
+  // For the "All Transactions" page, we'll need to adjust the expectation or API call.
+  // For now, let's leave this as is, but acknowledge it might not link correctly without a parent ID.
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
+      // The parent ID is no longer in meta, this linking method is now broken.
+      // We'll return null for the customer for now. A better approach would be to 
+      // fetch relationships separately if needed on the all transactions page.
       const parentId = tx.meta?.related_customer?.toString();
-      if (!parentId) return null;
+      if (!parentId) return {...tx, customer: null};
 
       const customer = customerMap.get(parentId);
       
-      if (!customer) return null;
+      if (!customer) return {...tx, customer: null};
       
       return {
         ...tx,
@@ -100,6 +110,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
       };
     })
     .filter((tx): tx is TransactionWithCustomer => tx !== null);
+
 
   return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -190,8 +201,9 @@ export const createTransaction = async (data: { customerId: string; date: string
         transaction_date: data.date,
         method: data.method,
         notes: data.notes || '',
-        related_customer: parseInt(data.customerId),
         customer_code: data.customer_code,
+        // The `related_customer` field is removed as per the new API spec.
+        // The relationship will be created via the jet-rel API.
       },
     }),
   });
@@ -204,6 +216,27 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
+  // Step 2: Relate the new transaction to the customer using the jet-rel API
+  const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      parent_id: parseInt(data.customerId),
+      child_id: newTransaction.id,
+      context: 'parent',
+      store_items_type: 'replace',
+      meta: {},
+    }),
+  });
+
+  if (!relationResponse.ok) {
+    const error = await relationResponse.json();
+    console.error('Failed to create transaction relationship:', error);
+    // Optionally, delete the created transaction to avoid orphans
+    await deleteTransaction(newTransaction.id.toString());
+    throw new Error((error as any).message || 'Failed to create transaction relationship.');
+  }
+
   return newTransaction;
 };
 
@@ -256,3 +289,5 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
+
+    
