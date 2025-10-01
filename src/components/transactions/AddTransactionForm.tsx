@@ -33,13 +33,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, Calendar as CalendarIcon, User, Hash } from 'lucide-react';
 import { createTransaction } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import type { Customer } from '@/lib/types';
 
 const formSchema = z.object({
   date: z.date({
@@ -52,10 +53,10 @@ const formSchema = z.object({
 });
 
 type AddTransactionFormProps = {
-    customerId: string;
+    customer: Customer;
 }
 
-export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
+export function AddTransactionForm({ customer }: AddTransactionFormProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -75,7 +76,7 @@ export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createTransaction({ ...values, customerId, date: values.date.toISOString() });
+      await createTransaction({ ...values, customerId: customer.id.toString(), date: values.date.toISOString() });
       toast({
         title: 'Success',
         description: 'Transaction added successfully.',
@@ -108,6 +109,17 @@ export function AddTransactionForm({ customerId }: AddTransactionFormProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <div className="p-3 rounded-lg border bg-muted/50 text-sm">
+                <div className="flex items-center gap-2 font-medium">
+                    <User className="h-4 w-4" />
+                    <span>{customer.meta.name}</span>
+                </div>
+                 <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                    <Hash className="h-4 w-4" />
+                    <span>{customer.meta.customer_code}</span>
+                </div>
+            </div>
+
              <FormField
               control={form.control}
               name="date"
