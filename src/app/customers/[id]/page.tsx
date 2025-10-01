@@ -13,7 +13,7 @@ import Link from "next/link";
 import { Transaction } from "@/lib/types";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id } = await params;
   let customer;
   let rawTransactions: Transaction[];
 
