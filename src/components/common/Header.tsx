@@ -42,7 +42,7 @@ export function Header({ isLoggedIn, username, isAdmin }: { isLoggedIn?: boolean
     }
   };
 
-  const isAuthPage = ['/login', '/2fa', '/setup-2fa'].includes(pathname);
+  const isAuthPage = ['/2fa', '/setup-2fa'].includes(pathname);
 
   if (isAuthPage) {
      return null;

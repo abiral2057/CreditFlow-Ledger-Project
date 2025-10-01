@@ -83,10 +83,6 @@ export default function LoginPage() {
     <main className="flex-1 flex flex-col items-center justify-center p-4 bg-muted/40">
       <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="text-center">
-          <Link href="/" className="flex justify-center items-center gap-3 text-primary mb-4 hover:opacity-80 transition-opacity">
-            <WalletCards className="h-8 w-8 text-foreground" />
-            <h1 className="text-3xl font-headline font-bold">CreditFlow</h1>
-          </Link>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
           <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
