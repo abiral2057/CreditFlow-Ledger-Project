@@ -48,8 +48,8 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    // Correctly query transactions related to a customer via JetEngine relations
-    const url = `${JET_REL_URL}${JET_REL_ID}/children/${customerId}?context=edit&per_page=100`;
+    // Use a standard WordPress meta query to fetch transactions for a specific customer
+    const url = `${WP_API_URL}transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100&context=edit`;
     const response = await fetch(url, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
@@ -70,22 +70,18 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   const headers = getAuthHeaders();
   let customers: Customer[] = [];
   let allTransactions: Transaction[] = [];
-  let relations: { parent_id: number; child_id: number }[] = [];
 
   try {
-    const [customersRes, transactionsRes, relationsRes] = await Promise.all([
+    const [customersRes, transactionsRes] = await Promise.all([
       fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
       fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
-      fetch(`${JET_REL_URL}${JET_REL_ID}/relations`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
     if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
-    if (!relationsRes.ok) throw new Error('Failed to fetch relationships');
 
     customers = await customersRes.json() as Customer[];
     allTransactions = await transactionsRes.json() as Transaction[];
-    relations = await relationsRes.json();
 
   } catch (error) {
       console.error("Error fetching initial data for getAllTransactions", error);
@@ -93,11 +89,10 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   }
 
   const customerMap = new Map(customers.map(c => [c.id, c]));
-  const transactionToCustomerMap = new Map(relations.map(r => [r.child_id, r.parent_id]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const customerId = transactionToCustomerMap.get(tx.id);
+      const customerId = tx.meta.related_customer;
       if (!customerId) return { ...tx, customer: null };
 
       const customer = customerMap.get(customerId);
@@ -199,6 +194,7 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         customer_code: data.customer_code,
+        related_customer: parseInt(data.customerId),
       },
     }),
   });
@@ -211,27 +207,6 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
-  // Step 2: Relate the new transaction to the customer using the jet-rel API
-  const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      parent_id: parseInt(data.customerId),
-      child_id: newTransaction.id,
-      context: 'parent',
-      store_items_type: 'replace',
-      meta: {},
-    }),
-  });
-
-  if (!relationResponse.ok) {
-    const error = await relationResponse.json();
-    console.error('Failed to create transaction relationship:', error);
-    // Optionally, delete the created transaction to avoid orphans
-    await deleteTransaction(newTransaction.id.toString());
-    throw new Error((error as any).message || 'Failed to create transaction relationship.');
-  }
-
   return newTransaction;
 };
 
