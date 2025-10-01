@@ -10,13 +10,15 @@ import { BackButton } from "@/components/common/BackButton";
 import { PaymentMethodChart } from "@/components/customers/PaymentMethodChart";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Transaction } from "@/lib/types";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  let customer, transactions;
+  let customer;
+  let rawTransactions: Transaction[];
 
   try {
-    [customer, transactions] = await Promise.all([
+    [customer, rawTransactions] = await Promise.all([
       getCustomerById(id),
       getTransactionsForCustomer(id)
     ]);
@@ -30,6 +32,9 @@ export default async function CustomerPage({ params }: { params: { id: string } 
   if (!customer) {
     notFound();
   }
+  
+  // Filter out any transactions that don't have meta field to prevent crashes
+  const transactions = rawTransactions.filter(t => t.meta);
 
   const totalCredit = transactions
     .filter(t => t.meta.transaction_type === 'Credit')
