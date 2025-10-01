@@ -49,7 +49,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     // Correctly query transactions related to a customer via JetEngine relations
-    const url = `${WP_API_URL}transactions?context=edit&per_page=100&jet_rel_query=1&jet_rel_parent_id=${customerId}&jet_rel_relation_id=${JET_REL_ID}`;
+    const url = `${JET_REL_URL}${JET_REL_ID}/children/${customerId}?context=edit&per_page=100`;
     const response = await fetch(url, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
@@ -76,7 +76,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
     const [customersRes, transactionsRes, relationsRes] = await Promise.all([
       fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
       fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
-      fetch(`${JET_REL_URL}${JET_REL_ID}/relations`, { headers, next: { tags: ['transactions'] } }),
+      fetch(`${JET_REL_URL}${JET_REL_ID}`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
@@ -284,5 +284,3 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
-
-    
