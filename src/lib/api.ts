@@ -22,9 +22,8 @@ const getCustomerIdFromTitle = (transaction: Transaction): string | null => {
 }
 
 export const getAllCustomers = async (): Promise<Customer[]> => {
-  const headers = getAuthHeaders();
   const response = await fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { 
-    headers,
+    headers: getAuthHeaders(),
     next: { tags: ['customers'] }
   });
   if (!response.ok) {
@@ -40,9 +39,8 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerById = async (id: string): Promise<Customer> => {
-  const headers = getAuthHeaders();
   const response = await fetch(`${WP_API_URL}/customers/${id}?context=edit`, { 
-    headers,
+    headers: getAuthHeaders(),
     next: { tags: [`customers/${id}`] }
   });
   if (!response.ok) {
@@ -58,9 +56,8 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const headers = getAuthHeaders();
     const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, {
-        headers,
+        headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
