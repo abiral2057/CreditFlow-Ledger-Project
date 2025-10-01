@@ -6,6 +6,12 @@ import * as jose from 'jose'
 const protectedRoutes = ['/dashboard', '/customers', '/transactions', '/setup-qr'];
 
 export async function middleware(request: NextRequest) {
+    // --- TEMPORARILY DISABLED FOR TESTING ---
+    // Always allow access to all routes
+    return NextResponse.next();
+    
+    /*
+    // Original authentication logic:
     const { pathname } = request.nextUrl;
     
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
@@ -47,6 +53,7 @@ export async function middleware(request: NextRequest) {
 
     // Allow access to all other pages (e.g., /customer-search)
     return NextResponse.next();
+    */
 }
  
 export const config = {
