@@ -49,47 +49,32 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     const headers = getAuthHeaders();
-    const relationUrl = `${JET_REL_URL}${JET_REL_ID}/children/${customerId}?per_page=100`;
-
-    // 1. Fetch the basic related transaction objects from JetEngine
-    const relationResponse = await fetch(relationUrl, {
-        headers,
-        next: { tags: ['transactions', `transactions-for-${customerId}`] }
-    });
-
-    if (!relationResponse.ok) {
-        console.error(`Failed to fetch transaction relations for customer ${customerId}:`, await relationResponse.text());
-        throw new Error('Failed to fetch transaction relations');
-    }
     
-    const relatedPosts: Partial<Transaction>[] = await relationResponse.json();
+    // 1. First, get the customer to find their customer_code
+    const customer = await getCustomerById(customerId);
+    const customerCode = customer.meta.customer_code;
 
-    if (!relatedPosts || relatedPosts.length === 0) {
+    if (!customerCode) {
+        console.warn(`Customer with ID ${customerId} does not have a customer_code.`);
         return [];
     }
 
-    // 2. Extract the IDs of the related transactions
-    const transactionIds = relatedPosts.map(p => p.id).filter(id => id !== undefined);
-
-    if (transactionIds.length === 0) {
-        return [];
-    }
-
-    // 3. Fetch the full transaction objects, including all meta fields, in a single batch request
-    const fullTransactionsUrl = `${WP_API_URL}transactions?include=${transactionIds.join(',')}&per_page=100&context=edit`;
-    const fullTransactionsResponse = await fetch(fullTransactionsUrl, {
+    // 2. Then, fetch all transactions that have that specific customer_code in their meta
+    const transactionsUrl = `${WP_API_URL}transactions?meta_key=customer_code&meta_value=${customerCode}&per_page=100&context=edit`;
+    
+    const transactionsResponse = await fetch(transactionsUrl, {
         headers,
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
-    if (!fullTransactionsResponse.ok) {
-        console.error(`Failed to fetch full transaction details:`, await fullTransactionsResponse.text());
-        throw new Error('Failed to fetch full transaction details');
+    if (!transactionsResponse.ok) {
+        console.error(`Failed to fetch transactions for customer_code ${customerCode}:`, await transactionsResponse.text());
+        throw new Error('Failed to fetch transactions for customer');
     }
 
-    const fullTransactions: Transaction[] = await fullTransactionsResponse.json();
+    const transactions: Transaction[] = await transactionsResponse.json();
 
-    return fullTransactions.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 
@@ -115,18 +100,14 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
       throw error;
   }
 
-  const customerMap = new Map(customers.map(c => [c.id, c]));
+  const customerMap = new Map(customers.map(c => [c.meta.customer_code, c]));
 
-  // To correctly map transactions to customers, we need the relationship data.
-  // The 'related_customer' meta field seems to be the intended link.
-  
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // The meta field `related_customer` should hold the ID of the parent customer.
-      const customerId = tx.meta.related_customer; 
-      if (!customerId) return { ...tx, customer: null };
+      const customerCode = tx.meta.customer_code;
+      if (!customerCode) return { ...tx, customer: null };
 
-      const customer = customerMap.get(customerId);
+      const customer = customerMap.get(customerCode);
       if (!customer) return { ...tx, customer: null };
       
       return {
@@ -238,7 +219,6 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
-  // Link transaction to customer using JetEngine relation
   try {
     const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
       method: 'POST',
@@ -258,8 +238,6 @@ export const createTransaction = async (data: { customerId: string; date: string
     }
   } catch(error) {
      console.error('Catastrophic failure in transaction relationship creation:', error);
-     // Since the transaction was created but the relation failed, this is a critical state.
-     // For now, re-throw the error to make it visible.
      throw error;
   }
 
