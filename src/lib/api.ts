@@ -50,13 +50,22 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     const headers = getAuthHeaders();
     
-    const response = await fetch(`${WP_API_URL}transactions?jet_rel_query=1&jet_rel_parent_id=${customerId}&jet_rel_relation_id=${JET_REL_ID}&per_page=100&context=edit`, {
+    // 1. Fetch the customer to get their customer_code
+    const customer = await getCustomerById(customerId);
+    if (!customer?.meta?.customer_code) {
+        console.error(`Could not find customer or customer_code for ID: ${customerId}`);
+        return [];
+    }
+    const customerCode = customer.meta.customer_code;
+
+    // 2. Fetch all transactions matching that customer_code
+    const response = await fetch(`${WP_API_URL}transactions?meta_key=customer_code&meta_value=${customerCode}&per_page=100&context=edit`, {
         headers,
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
     if (!response.ok) {
-        console.error(`Failed to fetch transactions for customer ${customerId}:`, await response.text());
+        console.error(`Failed to fetch transactions for customer ${customerId} using code ${customerCode}:`, await response.text());
         throw new Error('Failed to fetch transactions');
     }
     
