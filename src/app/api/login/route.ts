@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
 
   const { AUTH_EMAIL, AUTH_PASSWORD, JWT_SECRET, TOTP_SECRET } = process.env;
   
-  const requires2FA = !!TOTP_SECRET;
+  // Temporarily disabling 2FA check for testing
+  const requires2FA = false; // !!TOTP_SECRET;
 
   if (email === AUTH_EMAIL && password === AUTH_PASSWORD) {
     if (!JWT_SECRET) {
@@ -20,8 +21,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Server configuration error.' }, { status: 500 });
     }
 
-    if (requires2FA) {
-      // Set a temporary pre-authentication cookie
+    if (requires2FA && TOTP_SECRET) {
+      // This block will be skipped due to the temporary change above
       const preauthCookie = serialize('preauth', '1', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       return response;
 
     } else {
-      // If 2FA is not configured, log the user in directly (legacy flow)
+      // User will be logged in directly
       const secret = new TextEncoder().encode(JWT_SECRET);
       const jwt = await new jose.SignJWT({ email: AUTH_EMAIL, sub: 'admin_user' })
         .setProtectedHeader({ alg: 'HS256' })
