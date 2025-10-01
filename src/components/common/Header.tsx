@@ -96,14 +96,20 @@ export function Header() {
   return (
     <header className="bg-card border-b sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href={session.isLoggedIn ? "/dashboard" : "/"} className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
+        <Link href={!isLoading && session.isLoggedIn ? "/dashboard" : "/"} className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity">
           <WalletCards className="h-7 w-7 text-foreground" />
           <h1 className="text-2xl font-headline font-bold tracking-tight">udharibook</h1>
         </Link>
         
         <div className="flex items-center gap-2">
             {isLoading ? (
-                 <Skeleton className="h-8 w-8 rounded-full" />
+                 <div className='flex items-center gap-2'>
+                    <div className='hidden md:flex gap-2'>
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-24" />
+                    </div>
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                 </div>
             ) : session.isLoggedIn ? (
                 <>
                     <nav className="hidden md:flex items-center gap-2">
