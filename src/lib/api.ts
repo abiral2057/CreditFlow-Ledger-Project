@@ -1,10 +1,8 @@
 
-
 'use server';
 
 import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
-import fetch from 'node-fetch';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
 const WP_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v1';
@@ -13,7 +11,7 @@ const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ
 
 const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
-    'Authorization': 'Basic ' + btoa(`${WP_APP_USER}:${WP_APP_PASSWORD}`),
+    'Authorization': 'Basic ' + Buffer.from(`${WP_APP_USER}:${WP_APP_PASSWORD}`).toString('base64'),
 });
 
 // Helper function to safely extract customer ID from transaction title
