@@ -89,7 +89,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
     useEffect(() => {
         setCurrentPage(1);
         setSelectedRows([]);
-    }, [dateRange, transactions]);
+    }, [transactions, dateRange]);
 
     const handleSelectAll = (checked: boolean | 'indeterminate') => {
         if (checked === true) {
@@ -357,7 +357,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                   ) : (
                   <TableRow>
                       <TableCell colSpan={isReadOnly ? 5 : 7} className="text-center h-24">
-                          No transactions found for the selected date range.
+                          No transactions found.
                       </TableCell>
                   </TableRow>
                   )}

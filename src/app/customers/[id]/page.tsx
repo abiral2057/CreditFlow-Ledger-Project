@@ -48,8 +48,8 @@ export default async function CustomerPage({ params }: { params: { id: string } 
 
         <Card className="mb-8 shadow-sm">
             <CardHeader>
-                <CardTitle className="text-3xl font-headline text-primary flex items-center gap-3">
-                    <User className="h-8 w-8 text-foreground"/>
+                <CardTitle className="flex items-center gap-3 text-3xl font-headline">
+                    <User className="h-8 w-8" />
                     {customer.meta.name || customer.title.rendered}
                 </CardTitle>
                 <CardDescription>Ledger details and transaction history.</CardDescription>
@@ -61,7 +61,14 @@ export default async function CustomerPage({ params }: { params: { id: string } 
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-4 w-4" />
-                    <strong>Phone:</strong> <span className="text-foreground">{customer.meta.phone || 'N/A'}</span>
+                    <strong>Phone:</strong> 
+                    {customer.meta.phone ? (
+                         <a href={`tel:${customer.meta.phone}`} className="text-foreground hover:underline hover:text-primary transition-colors">
+                            {customer.meta.phone}
+                        </a>
+                    ) : (
+                        <span className="text-foreground">N/A</span>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <CircleDollarSign className="h-4 w-4" />
@@ -74,10 +81,10 @@ export default async function CustomerPage({ params }: { params: { id: string } 
             <Card className="lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Total Credit</CardTitle>
-                    <ArrowUp className="h-5 w-5 text-[hsl(var(--chart-2))]" />
+                    <ArrowUp className="h-5 w-5 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">+{formatAmount(totalCredit)}</div>
+                    <div className="text-2xl font-bold text-green-500">+{formatAmount(totalCredit)}</div>
                 </CardContent>
             </Card>
             <Card className="lg:col-span-1">
@@ -109,7 +116,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
-            <h3 className="text-2xl font-headline font-bold text-primary">Transaction History</h3>
+            <h3 className="text-2xl font-headline font-bold">Transaction History</h3>
             <AddTransactionForm customerId={customer.id} />
         </div>
         <Card className="shadow-sm">

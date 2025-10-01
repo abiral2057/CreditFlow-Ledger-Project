@@ -18,17 +18,20 @@ export default function CustomerLoading() {
 
         <Card className="mb-8">
             <CardHeader>
-                <Skeleton className="h-9 w-1/3" />
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-9 w-1/3" />
+                </div>
                 <Skeleton className="h-4 w-1/2 mt-2" />
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Skeleton className="h-6 w-2/3" />
-                <Skeleton className="h-6 w-2/3" />
-                <Skeleton className="h-6 w-2/3" />
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-6 w-48" />
             </CardContent>
         </Card>
         
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <Skeleton className="h-5 w-1/3" />
@@ -75,7 +78,6 @@ export default function CustomerLoading() {
                 <Skeleton className="h-10 w-64" />
                 <div className="flex items-center gap-2">
                     <Skeleton className="h-9 w-28" />
-                    <Skeleton className="h-9 w-20" />
                 </div>
             </div>
           <Table>
@@ -85,8 +87,9 @@ export default function CustomerLoading() {
                 <TableHead><Skeleton className="h-5 w-20" /></TableHead>
                 <TableHead><Skeleton className="h-5 w-20" /></TableHead>
                 <TableHead><Skeleton className="h-5 w-32" /></TableHead>
+                <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableHead>
                 <TableHead className="text-right"><Skeleton className="h-5 w-24 ml-auto" /></TableHead>
-                <TableHead className="w-12"><Skeleton className="h-5 w-5 ml-auto" /></TableHead>
+                <TableHead className="w-32"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -96,8 +99,9 @@ export default function CustomerLoading() {
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                    <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
                 </TableRow>
               ))}
             </TableBody>
