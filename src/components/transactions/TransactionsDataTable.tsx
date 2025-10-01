@@ -25,7 +25,7 @@ import { deleteMultipleTransactions } from '@/lib/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
-import { format, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -63,10 +63,6 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     useEffect(() => {
         // This ensures the date is only set on the client, preventing hydration mismatch
-        setDateRange({
-            from: startOfMonth(new Date()),
-            to: new Date(),
-        });
         setIsClient(true);
     }, []);
 
@@ -151,7 +147,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
         doc.setFont('helvetica', 'normal');
         doc.text(`Customer: ${customer.meta.name}`, 14, 32);
         doc.text(`Code: ${customer.meta.customer_code}`, 14, 38);
-        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : ''} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 44);
+        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : 'All Time'} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 44);
         
         const tableData = filteredTransactions.map(tx => [
             new Date(tx.date).toLocaleDateString(),
@@ -166,7 +162,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
             head: [['Date', 'Type', 'Method', 'Notes', 'Amount']],
             body: tableData,
             theme: 'striped',
-            headStyles: { fillColor: [34, 49, 63] },
+            headStyles: { fillColor: [0, 0, 0] },
             didDrawPage: (data: any) => {
                 // Footer
                 const pageCount = doc.getNumberOfPages();
@@ -258,7 +254,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                             format(dateRange.from, "LLL dd, y")
                         )
                         ) : (
-                        <span>Pick a date</span>
+                        <span>Pick a date range</span>
                         )}
                     </Button>
                     </PopoverTrigger>
@@ -305,8 +301,8 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                     )}
                   <TableHead className="w-[150px]">Date</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Payment Method</TableHead>
-                  <TableHead className="hidden lg:table-cell">Notes</TableHead>
+                  <TableHead className="table-cell">Payment Method</TableHead>
+                  <TableHead className="hidden sm:table-cell">Notes</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead className="w-[120px] text-right pr-4">Actions</TableHead>
                   </TableRow>
@@ -332,16 +328,16 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
                               {tx.meta.transaction_type}
                               </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="table-cell">
                               <div className="flex items-center gap-2">
                                 {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
                                 {tx.meta.payment_method}
                               </div>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell truncate max-w-[150px]">
+                          <TableCell className="hidden sm:table-cell truncate max-w-[150px]">
                             {tx.meta.notes || '-'}
                           </TableCell>
-                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
+                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
                               {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                           </TableCell>
                           

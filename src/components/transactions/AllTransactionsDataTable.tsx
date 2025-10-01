@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
-import { format, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -36,10 +36,6 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
     const isMobile = useIsMobile();
 
     useEffect(() => {
-        setDateRange({
-            from: startOfMonth(new Date()),
-            to: new Date(),
-        });
         setIsClient(true);
     }, []);
 
@@ -65,7 +61,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : ''} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 32);
+        doc.text(`Date Range: ${dateRange?.from ? format(dateRange.from, 'PP') : 'All Time'} - ${dateRange?.to ? format(dateRange.to, 'PP') : ''}`, 14, 32);
         
         const tableData = filteredTransactions.map(tx => [
             new Date(tx.date).toLocaleDateString(),
@@ -81,7 +77,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
             head: [['Date', 'Customer', 'Type', 'Method', 'Notes', 'Amount']],
             body: tableData,
             theme: 'striped',
-            headStyles: { fillColor: [34, 49, 63] },
+            headStyles: { fillColor: [0, 0, 0] },
         });
 
         doc.save(`All_Transactions_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -124,7 +120,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                             format(dateRange.from, "LLL dd, y")
                         )
                         ) : (
-                        <span>Pick a date</span>
+                        <span>Pick a date range</span>
                         )}
                     </Button>
                     </PopoverTrigger>
@@ -153,7 +149,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                         <TableHead className="w-[150px]">Date</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead>Payment Method</TableHead>
+                        <TableHead className="table-cell">Payment Method</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="w-[50px] text-right pr-4">View</TableHead>
                     </TableRow>
@@ -169,7 +165,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.customer ? (
                                     <Button variant="link" asChild className="p-0 h-auto font-normal text-base -ml-2">
                                         <Link href={`/customers/${tx.customer.id}`} className="flex items-center gap-2">
-                                            <User className="h-4 w-4 text-foreground" />
+                                            <User className="h-4 w-4" />
                                             {tx.customer.meta.name}
                                         </Link>
                                     </Button>
@@ -182,13 +178,13 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                                 {tx.meta.transaction_type}
                                 </Badge>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="table-cell">
                                 <div className="flex items-center gap-2">
                                     {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
                                     {tx.meta.payment_method}
                                 </div>
                             </TableCell>
-                            <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-[hsl(var(--chart-2))]' : 'text-destructive'}`}>
+                            <TableCell className={`text-right font-medium ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
                                 {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
                             </TableCell>
                             <TableCell className="text-right pr-2">
@@ -199,7 +195,7 @@ export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTa
                     ) : (
                     <TableRow>
                         <TableCell colSpan={6} className="text-center h-24">
-                            No transactions found for the selected date range.
+                            No transactions found.
                         </TableCell>
                     </TableRow>
                     )}
