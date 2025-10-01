@@ -127,7 +127,7 @@ export default async function CustomerPage({ params }: { params: { id: string } 
       </main>
 
       {customer.meta.phone && (
-         <Button asChild className="fixed bottom-24 right-6 md:bottom-8 md:right-8 h-16 w-16 rounded-full shadow-lg z-50 animate-in fade-in-0 zoom-in-90 duration-300">
+         <Button asChild className="fixed bottom-20 left-6 md:bottom-8 md:left-8 h-14 w-14 rounded-full shadow-lg z-50 animate-in fade-in-0 zoom-in-90 duration-300">
             <a href={`tel:${customer.meta.phone}`}>
                 <Phone className="h-6 w-6" />
                 <span className="sr-only">Call {customer.meta.name}</span>
