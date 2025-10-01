@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -42,7 +41,7 @@ export async function createCustomer(data: { name: string; phone?: string; credi
   }
 }
 
-export async function updateCustomer(id: string, data: Partial<Customer['meta']>) {
+export async function updateCustomer(id: string, data: Partial<Omit<Customer['meta'], 'customer_code'>>) {
   try {
     const updatedCustomer = await apiUpdateCustomer(id, data);
     revalidateTag(`customers/${id}`);

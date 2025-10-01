@@ -58,7 +58,9 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await updateCustomer(customer.id.toString(), values);
+      // Exclude customer_code from the submitted data as it's not editable
+      const { customer_code, ...updateData } = values;
+      await updateCustomer(customer.id.toString(), updateData);
       toast({
         title: 'Success',
         description: 'Customer updated successfully.',
@@ -84,11 +86,24 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>
           <DialogDescription>
-            Update the customer's details below.
+            Update the customer's details below. The customer code cannot be changed.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="customer_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Customer Code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="CUST-001" {...field} disabled />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="name"
@@ -97,19 +112,6 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customer_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="CUST-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
