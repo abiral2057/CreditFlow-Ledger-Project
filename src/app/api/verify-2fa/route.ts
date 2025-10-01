@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import speakeasy from 'speakeasy';
 import { serialize } from 'cookie';
-import * as jose from 'jose';
+import { SignJWT } from 'jose';
 import { setEnrolledStatus } from '../login/route';
 import { cookies } from 'next/headers';
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Create JWT
     const secret = new TextEncoder().encode(JWT_SECRET);
-    const jwt = await new jose.SignJWT({ email: AUTH_EMAIL, sub: 'admin_user' })
+    const jwt = await new SignJWT({ email: AUTH_EMAIL, sub: 'admin_user' })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1h')

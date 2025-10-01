@@ -1,7 +1,7 @@
 
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import * as jose from 'jose';
+import { jwtVerify } from 'jose';
 
 export default async function RootPage() {
     const cookieStore = cookies();
@@ -10,7 +10,7 @@ export default async function RootPage() {
     if (authCookie?.value) {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-        await jose.jwtVerify(authCookie.value, secret);
+        await jwtVerify(authCookie.value, secret);
         // If token is valid, go to the admin dashboard
         redirect('/dashboard');
       } catch (e) {

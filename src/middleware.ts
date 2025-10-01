@@ -1,17 +1,12 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import * as jose from 'jose'
+import { jwtVerify } from 'jose';
 
 const protectedRoutes = ['/dashboard', '/customers', '/transactions', '/setup-qr'];
 
+// This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-    // --- TEMPORARILY DISABLED FOR TESTING ---
-    // Always allow access to all routes
-    return NextResponse.next();
-    
-    /*
-    // Original authentication logic:
     const { pathname } = request.nextUrl;
     
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
@@ -24,7 +19,7 @@ export async function middleware(request: NextRequest) {
 
         try {
             const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-            await jose.jwtVerify(authCookie.value, secret);
+            await jwtVerify(authCookie.value, secret);
             // Token is valid, allow access to protected route
             return NextResponse.next();
         } catch (error) {
@@ -42,7 +37,7 @@ export async function middleware(request: NextRequest) {
         if (authCookie?.value) {
              try {
                 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-                await jose.jwtVerify(authCookie.value, secret);
+                await jwtVerify(authCookie.value, secret);
                 // If token is valid, redirect from auth page to dashboard
                 return NextResponse.redirect(new URL('/dashboard', request.url));
             } catch (error) {
@@ -53,7 +48,6 @@ export async function middleware(request: NextRequest) {
 
     // Allow access to all other pages (e.g., /customer-search)
     return NextResponse.next();
-    */
 }
  
 export const config = {

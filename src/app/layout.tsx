@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Header } from '@/components/common/Header';
 import { cookies } from 'next/headers';
-import * as jose from 'jose';
+import { jwtVerify } from 'jose';
 import { MobileFooterNav } from '@/components/common/MobileFooterNav';
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ async function getSessionData() {
 
     try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-        const { payload } = await jose.jwtVerify(authCookie.value, secret);
+        const { payload } = await jwtVerify(authCookie.value, secret);
         return {
             isLoggedIn: true,
             username: payload.email as string,
