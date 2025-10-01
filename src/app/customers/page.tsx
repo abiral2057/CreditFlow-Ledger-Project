@@ -1,8 +1,10 @@
+
 import { getAllCustomers } from "@/lib/api";
 import { CustomerCard } from "@/components/customers/CustomerCard";
 import type { Customer } from "@/lib/types";
 import { CreateCustomerForm } from "@/components/customers/CreateCustomerForm";
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
+import { SeedDataButton } from "@/components/customers/SeedDataButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +32,7 @@ export default async function CustomersPage({ searchParams }: { searchParams?: {
             <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
               <CustomerSearch />
               <CreateCustomerForm />
+              <SeedDataButton />
             </div>
           </div>
           {filteredCustomers.length > 0 ? (
@@ -41,7 +44,7 @@ export default async function CustomersPage({ searchParams }: { searchParams?: {
           ) : (
             <div className="text-center py-20 text-muted-foreground rounded-lg border border-dashed">
               <p className="text-lg font-medium">No customers found.</p>
-              <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" to add your first one."'}</p>
+              <p className="text-sm mt-2">{searchQuery ? 'Try adjusting your search.' : 'Click "Create Customer" or "Seed Data" to get started.'}</p>
             </div>
           )}
         </div>
