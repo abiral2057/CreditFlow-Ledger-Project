@@ -50,31 +50,19 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
     const headers = getAuthHeaders();
     
-    // 1. First, get the customer to find their customer_code
-    const customer = await getCustomerById(customerId);
-    const customerCode = customer.meta.customer_code;
-
-    if (!customerCode) {
-        console.warn(`Customer with ID ${customerId} does not have a customer_code.`);
-        return [];
-    }
-
-    // 2. Then, fetch all transactions that have that specific customer_code in their meta
-    const transactionsUrl = `${WP_API_URL}transactions?meta_key=customer_code&meta_value=${customerCode}&per_page=100&context=edit`;
-    
-    const transactionsResponse = await fetch(transactionsUrl, {
+    const response = await fetch(`${WP_API_URL}transactions?jet_rel_query=1&jet_rel_parent_id=${customerId}&jet_rel_relation_id=${JET_REL_ID}&per_page=100&context=edit`, {
         headers,
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
 
-    if (!transactionsResponse.ok) {
-        console.error(`Failed to fetch transactions for customer_code ${customerCode}:`, await transactionsResponse.text());
-        throw new Error('Failed to fetch transactions for customer');
+    if (!response.ok) {
+        console.error(`Failed to fetch transactions for customer ${customerId}:`, await response.text());
+        throw new Error('Failed to fetch transactions');
     }
-
-    const transactions: Transaction[] = await transactionsResponse.json();
-
-    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    const customerTransactions: Transaction[] = await response.json() as Transaction[];
+    
+    return customerTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 
@@ -84,30 +72,30 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   let allTransactions: Transaction[] = [];
 
   try {
-    const [customersRes, transactionsRes] = await Promise.all([
-      fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
-      fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
-    ]);
+      const [customersRes, transactionsRes] = await Promise.all([
+        fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
+        fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
+      ]);
 
-    if (!customersRes.ok) throw new Error('Failed to fetch customers');
-    if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
+      if (!customersRes.ok) throw new Error('Failed to fetch customers');
+      if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
 
-    customers = await customersRes.json() as Customer[];
-    allTransactions = await transactionsRes.json() as Transaction[];
-
+      customers = await customersRes.json();
+      allTransactions = await transactionsRes.json();
   } catch (error) {
       console.error("Error fetching initial data for getAllTransactions", error);
       throw error;
   }
-
-  const customerMap = new Map(customers.map(c => [c.meta.customer_code, c]));
+  
+  const customerMap = new Map(customers.map(c => [c.id, c]));
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      const customerCode = tx.meta.customer_code;
-      if (!customerCode) return { ...tx, customer: null };
+      // The related customer ID is stored in the meta field.
+      const relatedCustomerId = tx.meta?.related_customer;
+      if (!relatedCustomerId) return { ...tx, customer: null };
 
-      const customer = customerMap.get(customerCode);
+      const customer = customerMap.get(relatedCustomerId);
       if (!customer) return { ...tx, customer: null };
       
       return {
