@@ -232,175 +232,173 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
 
     return (
         <>
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4 border-b">
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-                 <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        id="date"
-                        variant={"outline"}
-                        className={cn(
-                        "w-full sm:w-[300px] justify-start text-left font-normal",
-                        !dateRange && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateRange?.from ? (
-                        dateRange.to ? (
-                            <>
-                            {format(dateRange.from, "LLL dd, y")} -{" "}
-                            {format(dateRange.to, "LLL dd, y")}
-                            </>
-                        ) : (
-                            format(dateRange.from, "LLL dd, y")
-                        )
-                        ) : (
-                        <span>Pick a date range</span>
-                        )}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange?.from}
-                        selected={dateRange}
-                        onSelect={setDateRange}
-                        numberOfMonths={isMobile ? 1 : 2}
-                    />
-                    </PopoverContent>
-                </Popover>
-                <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Download PDF
-                </Button>
-            </div>
-            {!isReadOnly && selectedRows.length > 0 && (
-                <div className="flex items-center gap-2 self-end sm:self-center">
-                    <div className="text-sm text-muted-foreground">
-                        {selectedRows.length} selected
-                    </div>
-                    <Button variant="destructive" size="sm" onClick={() => setIsBulkDeleteConfirmOpen(true)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4 border-b">
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            id="date"
+                            variant={"outline"}
+                            className={cn(
+                            "w-full sm:w-[300px] justify-start text-left font-normal",
+                            !dateRange && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (
+                            dateRange.to ? (
+                                <>
+                                {format(dateRange.from, "LLL dd, y")} -{" "}
+                                {format(dateRange.to, "LLL dd, y")}
+                                </>
+                            ) : (
+                                format(dateRange.from, "LLL dd, y")
+                            )
+                            ) : (
+                            <span>Pick a date range</span>
+                            )}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={dateRange?.from}
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={isMobile ? 1 : 2}
+                        />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        Download PDF
                     </Button>
                 </div>
-            )}
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-              <TableHeader>
-                  <TableRow>
-                    {!isReadOnly && (
-                        <TableHead className="w-[50px] px-4">
-                            <Checkbox 
-                                checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
-                                onCheckedChange={handleSelectAll}
-                                aria-label="Select all rows on this page"
-                            />
-                        </TableHead>
-                    )}
-                  <TableHead className="w-[150px]">Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="table-cell">Payment Method</TableHead>
-                  <TableHead className="hidden sm:table-cell">Notes</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="w-[120px] text-right pr-4">Actions</TableHead>
-                  </TableRow>
-              </TableHeader>
-              <TableBody>
-                  {paginatedTransactions.length > 0 ? (
-                  paginatedTransactions.map(tx => (
-                      <TableRow key={tx.id} data-state={selectedRows.includes(tx.id.toString()) && "selected"} className="hover:bg-muted/50">
-                          {!isReadOnly && (
-                            <TableCell className="px-4">
+                {!isReadOnly && selectedRows.length > 0 && (
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                        <div className="text-sm text-muted-foreground">
+                            {selectedRows.length} selected
+                        </div>
+                        <Button variant="destructive" size="sm" onClick={() => setIsBulkDeleteConfirmOpen(true)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                        </Button>
+                    </div>
+                )}
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                  <TableHeader>
+                      <TableRow>
+                        {!isReadOnly && (
+                            <TableHead className="w-[50px] px-4">
                                 <Checkbox 
-                                    checked={selectedRows.includes(tx.id.toString())}
-                                    onCheckedChange={(checked) => handleSelectRow(tx.id.toString(), !!checked)}
-                                    aria-label={`Select row ${tx.id}`}
+                                    checked={isAllSelectedInPage || (isIndeterminate ? 'indeterminate' : false)}
+                                    onCheckedChange={handleSelectAll}
+                                    aria-label="Select all rows on this page"
                                 />
-                            </TableCell>
-                          )}
-                          <TableCell className="font-medium">
-                            {new Date(tx.date).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                              <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'} >
-                              {tx.meta.transaction_type}
-                              </Badge>
-                          </TableCell>
-                          <TableCell className="table-cell">
-                              <div className="flex items-center gap-2">
-                                {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
-                                {tx.meta.payment_method}
-                              </div>
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell truncate max-w-[150px]">
-                            {tx.meta.notes || '-'}
-                          </TableCell>
-                          <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
-                              {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
-                          </TableCell>
-                          
-                          <TableCell className="text-right pr-2">
-                              <div className="flex justify-end items-center">
-                                  <ViewTransactionDialog transaction={tx} />
-                                  {!isReadOnly && (
-                                    <>
-                                      <EditTransactionForm transaction={tx} customerId={customerId} />
-                                      <DeleteTransactionButton transactionId={tx.id.toString()} customerId={customerId} />
-                                    </>
-                                  )}
-                              </div>
+                            </TableHead>
+                        )}
+                      <TableHead className="w-[150px]">Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="table-cell">Payment Method</TableHead>
+                      <TableHead className="hidden sm:table-cell">Notes</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[120px] text-right pr-4">Actions</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {paginatedTransactions.length > 0 ? (
+                      paginatedTransactions.map(tx => (
+                          <TableRow key={tx.id} data-state={selectedRows.includes(tx.id.toString()) && "selected"} className="hover:bg-muted/50">
+                              {!isReadOnly && (
+                                <TableCell className="px-4">
+                                    <Checkbox 
+                                        checked={selectedRows.includes(tx.id.toString())}
+                                        onCheckedChange={(checked) => handleSelectRow(tx.id.toString(), !!checked)}
+                                        aria-label={`Select row ${tx.id}`}
+                                    />
+                                </TableCell>
+                              )}
+                              <TableCell className="font-medium">
+                                {new Date(tx.date).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>
+                                  <Badge variant={tx.meta.transaction_type === 'Credit' ? 'secondary' : 'destructive'} >
+                                  {tx.meta.transaction_type}
+                                  </Badge>
+                              </TableCell>
+                              <TableCell className="table-cell">
+                                  <div className="flex items-center gap-2">
+                                    {paymentMethodIcons[tx.meta.payment_method] || <CreditCard className="h-4 w-4" />}
+                                    {tx.meta.payment_method}
+                                  </div>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell truncate max-w-[150px]">
+                                {tx.meta.notes || '-'}
+                              </TableCell>
+                              <TableCell className={`text-right font-semibold ${tx.meta.transaction_type === 'Credit' ? 'text-green-600' : 'text-destructive'}`}>
+                                  {tx.meta.transaction_type === 'Credit' ? '+' : '-'}{formatAmount(tx.meta.amount)}
+                              </TableCell>
+                              
+                              <TableCell className="text-right pr-2">
+                                  <div className="flex justify-end items-center">
+                                      <ViewTransactionDialog transaction={tx} />
+                                      {!isReadOnly && (
+                                        <>
+                                          <EditTransactionForm transaction={tx} customerId={customerId} />
+                                          <DeleteTransactionButton transactionId={tx.id.toString()} customerId={customerId} />
+                                        </>
+                                      )}
+                                  </div>
+                              </TableCell>
+                          </TableRow>
+                      ))
+                      ) : (
+                      <TableRow>
+                          <TableCell colSpan={isReadOnly ? 5 : 7} className="text-center h-24">
+                              No transactions found.
                           </TableCell>
                       </TableRow>
-                  ))
-                  ) : (
-                  <TableRow>
-                      <TableCell colSpan={isReadOnly ? 5 : 7} className="text-center h-24">
-                          No transactions found.
-                      </TableCell>
-                  </TableRow>
-                  )}
-              </TableBody>
-          </Table>
-        </div>
-        {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                    Showing {paginatedTransactions.length > 0 ? ((currentPage -1) * ITEMS_PER_PAGE) + 1 : 0} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transaction(s).
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                    </Button>
-                    <span className="text-sm font-medium">Page {currentPage} of {totalPages > 0 ? totalPages : 1}</span>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages || totalPages === 0}>
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                </div>
+                      )}
+                  </TableBody>
+              </Table>
             </div>
-        )}
-        <AlertDialog open={isBulkDeleteConfirmOpen} onOpenChange={setIsBulkDeleteConfirmOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This will permanently delete the selected {selectedRows.length} transaction(s).
-                </Description>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleBulkDelete} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
-                    {isPending ? 'Deleting...' : 'Delete'}
-                </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between p-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        Showing {paginatedTransactions.length > 0 ? ((currentPage -1) * ITEMS_PER_PAGE) + 1 : 0} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of {filteredTransactions.length} transaction(s).
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            Previous
+                        </Button>
+                        <span className="text-sm font-medium">Page {currentPage} of {totalPages > 0 ? totalPages : 1}</span>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages || totalPages === 0}>
+                            Next
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                    </div>
+                </div>
+            )}
+            <AlertDialog open={isBulkDeleteConfirmOpen} onOpenChange={setIsBulkDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will permanently delete the selected {selectedRows.length} transaction(s).
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleBulkDelete} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+                        {isPending ? 'Deleting...' : 'Delete'}
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
-
-    
 }
