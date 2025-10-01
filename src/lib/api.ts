@@ -4,8 +4,8 @@
 import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
-const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
-const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v2';
+const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2/';
+const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v2/';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
@@ -16,7 +16,7 @@ const getAuthHeaders = () => ({
 
 
 export const getAllCustomers = async (): Promise<Customer[]> => {
-  const response = await fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { 
+  const response = await fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { 
     headers: getAuthHeaders(),
     next: { tags: ['customers'] }
   });
@@ -29,7 +29,7 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerById = async (id: string): Promise<Customer> => {
-  const response = await fetch(`${WP_API_URL}/customers/${id}?context=edit`, { 
+  const response = await fetch(`${WP_API_URL}customers/${id}?context=edit`, { 
     headers: getAuthHeaders(),
     next: { tags: [`customers/${id}`] }
   });
@@ -46,7 +46,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const response = await fetch(`${WP_API_URL}/transactions?per_page=100&context=edit&meta_key=related_customer&meta_value=${customerId}`, {
+    const response = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit&meta_key=related_customer&meta_value=${customerId}`, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
@@ -69,8 +69,8 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   try {
     const [customersRes, transactionsRes] = await Promise.all([
-      fetch(`${WP_API_URL}/customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
-      fetch(`${WP_API_URL}/transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
+      fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
+      fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
@@ -111,7 +111,7 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
 export const createCustomer = async (data: { name: string; customer_code: string; phone: string; credit_limit: string; }) => {
   const headers = getAuthHeaders();
-  const response = await fetch(`${WP_API_URL}/customers`, {
+  const response = await fetch(`${WP_API_URL}customers`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -145,7 +145,7 @@ export const updateCustomer = async (id: string, data: Partial<Customer['meta']>
     body.title = data.name;
   }
 
-  const response = await fetch(`${WP_API_URL}/customers/${id}`, {
+  const response = await fetch(`${WP_API_URL}customers/${id}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -161,7 +161,7 @@ export const updateCustomer = async (id: string, data: Partial<Customer['meta']>
 
 export const deleteCustomer = async (id: string) => {
     const headers = getAuthHeaders();
-    const response = await fetch(`${WP_API_URL}/customers/${id}?force=true`, {
+    const response = await fetch(`${WP_API_URL}customers/${id}?force=true`, {
         method: 'DELETE',
         headers,
     });
@@ -182,7 +182,7 @@ export const deleteCustomer = async (id: string) => {
 export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) => {
   const headers = getAuthHeaders();
   
-  const transactionResponse = await fetch(`${WP_API_URL}/transactions`, {
+  const transactionResponse = await fetch(`${WP_API_URL}transactions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -209,7 +209,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   const newTransaction = await transactionResponse.json() as Transaction;
   
   // Explicitly link the transaction to the customer using JetEngine relation API
-  const relationResponse = await fetch(`${JET_REL_URL}/22`, {
+  const relationResponse = await fetch(`${JET_REL_URL}22`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -248,7 +248,7 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
     body.date = data.date;
   }
   
-  const response = await fetch(`${WP_API_URL}/transactions/${transactionId}`, {
+  const response = await fetch(`${WP_API_URL}transactions/${transactionId}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -264,7 +264,7 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
 
 export const deleteTransaction = async (transactionId: string) => {
     const headers = getAuthHeaders();
-    const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
+    const response = await fetch(`${WP_API_URL}transactions/${transactionId}?force=true`, {
         method: 'DELETE',
         headers,
     });
