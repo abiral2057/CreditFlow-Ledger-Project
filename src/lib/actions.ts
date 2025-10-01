@@ -9,8 +9,10 @@ import {
   createTransaction as apiCreateTransaction,
   updateTransaction as apiUpdateTransaction,
   deleteTransaction as apiDeleteTransaction,
+  getCustomerById,
 } from './api';
 import type { Customer, Transaction } from './types';
+import { formatAmount } from './utils';
 
 const revalidateAll = () => {
     revalidateTag('customers');
@@ -30,7 +32,7 @@ export async function createCustomer(data: { name: string; phone?: string; credi
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const customer_code = `CUS-${year}${month}${day}-${hours}${minutes}${seconds}`;
 
-    const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone: data.phone || '' });
+    const newCustomer = await apiCreateCustomer({ ...data, customer_code, phone: data.phone || '', name: data.name });
     revalidateAll();
     return newCustomer;
   } catch (error) {
@@ -65,7 +67,10 @@ export async function deleteCustomer(id: string) {
 
 export async function createTransaction(data: { customerId: string, date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
     try {
-      const newTransaction = await apiCreateTransaction(data);
+      const customer = await getCustomerById(data.customerId);
+      const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;
+      
+      const newTransaction = await apiCreateTransaction({ ...data, title });
       revalidateTag(`transactions-for-${data.customerId}`);
       revalidateAll();
       return newTransaction;
@@ -77,7 +82,10 @@ export async function createTransaction(data: { customerId: string, date: string
 
 export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) {
     try {
-      const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, date: data.date });
+      const customer = await getCustomerById(customerId);
+      const title = `Transaction for ${customer.meta.name} - ${formatAmount(data.amount)} on ${new Date(data.date).toLocaleDateString()}`;
+
+      const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, title });
       revalidateTag(`transactions-for-${customerId}`);
       revalidateAll();
       return updatedTransaction;

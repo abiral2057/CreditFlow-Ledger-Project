@@ -88,11 +88,9 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
 
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // The `related_customer` meta field from JetEngine might be an array of IDs
       const parentIdArray = tx.meta?.related_customer;
       if (!Array.isArray(parentIdArray) || parentIdArray.length === 0) return null;
 
-      // Assuming the first ID in the array is the correct parent
       const parentId = parentIdArray[0].toString();
       const customer = customerMap.get(parentId);
       
@@ -122,7 +120,6 @@ export const createCustomer = async (data: { name: string; customer_code: string
         customer_code: data.customer_code,
         phone: data.phone,
         credit_limit: data.credit_limit,
-        notes: '',
       },
     }),
   });
@@ -179,20 +176,20 @@ export const deleteCustomer = async (id: string) => {
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string }) => {
+export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string; }) => {
   const headers = getAuthHeaders();
   
   const transactionResponse = await fetch(`${WP_API_URL}transactions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      title: `Transaction for customer ${data.customerId} - ${data.amount}`,
+      title: data.title,
       status: 'publish',
       date: data.date,
       meta: {
         transaction_type: data.transaction_type,
         amount: data.amount,
-        transaction_date: data.date,
+        date: data.date,
         payment_method: data.payment_method,
         notes: data.notes || '',
         related_customer: [parseInt(data.customerId)],
@@ -208,7 +205,6 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
-  // Explicitly link the transaction to the customer using JetEngine relation API
   const relationResponse = await fetch(`${JET_REL_URL}22`, {
       method: 'POST',
       headers,
@@ -223,7 +219,6 @@ export const createTransaction = async (data: { customerId: string; date: string
   if (!relationResponse.ok) {
       const error = await relationResponse.json();
       console.error('Failed to link transaction to customer:', error);
-      // If linking fails, we should delete the orphaned transaction
       await deleteTransaction(newTransaction.id.toString());
       throw new Error((error as any).message || 'Failed to link transaction to customer.');
   }
@@ -231,14 +226,14 @@ export const createTransaction = async (data: { customerId: string; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
+export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; title: string; }>) {
   const headers = getAuthHeaders();
   
-  const body: {meta: any, date?:string} = {
+  const body: {meta: any, date?:string, title?: string} = {
     meta: {
       transaction_type: data.transaction_type,
       amount: data.amount,
-      transaction_date: data.date,
+      date: data.date,
       payment_method: data.payment_method,
       notes: data.notes
     }
@@ -246,6 +241,9 @@ export async function updateTransaction(transactionId: string, data: Partial<{ d
 
   if (data.date) {
     body.date = data.date;
+  }
+  if (data.title) {
+    body.title = data.title;
   }
   
   const response = await fetch(`${WP_API_URL}transactions/${transactionId}`, {
@@ -276,5 +274,3 @@ export const deleteTransaction = async (transactionId: string) => {
     }
     return { success: true };
 }
-
-    
