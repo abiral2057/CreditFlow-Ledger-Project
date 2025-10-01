@@ -14,6 +14,7 @@ const COLORS = {
   'Card': 'hsl(var(--chart-2))',
   'Bank Transfer': 'hsl(var(--chart-3))',
   'Online Payment': 'hsl(var(--chart-4))',
+  'Product': 'hsl(var(--chart-5))',
 };
 
 export function PaymentMethodChart({ transactions }: PaymentMethodChartProps) {

@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import 'server-only';
@@ -68,7 +67,7 @@ export const getTransactionsForCustomer = async (customerId: string): Promise<Tr
 
     const allTransactions: Transaction[] = await allTransactionsResponse.json();
 
-    const customerTransactions = allTransactions.filter(tx => tx.meta.customer_code === customerCode);
+    const customerTransactions = allTransactions.filter(tx => tx.meta && tx.meta.customer_code === customerCode);
 
     return customerTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -183,7 +182,7 @@ export const deleteCustomer = async (id: string) => {
     return { success: true };
 }
 
-export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string; customer_code: string; }) => {
+export const createTransaction = async (data: { customerId: string; date: string; amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment' | 'Product', notes?: string, title: string; customer_code: string; }) => {
   const headers = getAuthHeaders();
   
   const transactionResponse = await fetch(`${WP_API_URL}transactions`, {
@@ -238,7 +237,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string, customer_code: string }) {
+export async function updateTransaction(transactionId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment' | 'Product', notes?: string, title: string, customer_code: string }) {
   const headers = getAuthHeaders();
   
   const body: {meta: any, date?:string, title?: string} = {

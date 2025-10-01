@@ -47,7 +47,7 @@ const formSchema = z.object({
   }),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount').min(1, 'Amount is required.'),
   transaction_type: z.enum(['Credit', 'Debit']),
-  method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Online Payment']),
+  method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Online Payment', 'Product']),
   notes: z.string().optional(),
 });
 
@@ -185,6 +185,7 @@ export function EditTransactionForm({ transaction, customerId }: EditTransaction
                             <SelectItem value="Card">Card</SelectItem>
                             <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
                             <SelectItem value="Online Payment">Online Payment</SelectItem>
+                            <SelectItem value="Product">Product</SelectItem>
                         </SelectContent>
                     </Select>
                   <FormMessage />

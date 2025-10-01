@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Eye, Calendar, Tag, CreditCard, Landmark, Coins, FileText, Banknote } from 'lucide-react';
+import { Eye, Calendar, Tag, CreditCard, Landmark, Coins, FileText, Banknote, Package } from 'lucide-react';
 import type { Transaction } from '@/lib/types';
 import { formatAmount } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Card': <CreditCard className="h-4 w-4 text-muted-foreground" />,
     'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
     'Online Payment': <Banknote className="h-4 w-4 text-muted-foreground" />,
+    'Product': <Package className="h-4 w-4 text-muted-foreground" />,
 };
 
 export function ViewTransactionDialog({ transaction }: ViewTransactionDialogProps) {

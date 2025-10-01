@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteTransactionButton } from "@/components/transactions/DeleteTransactionButton";
 import { formatAmount } from "@/lib/utils";
-import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Coins, CreditCard, Landmark, Banknote } from "lucide-react";
+import { Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FileDown, Coins, CreditCard, Landmark, Banknote, Package } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +49,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Card': <CreditCard className="h-4 w-4" />,
     'Bank Transfer': <Landmark className="h-4 w-4" />,
     'Online Payment': <Banknote className="h-4 w-4" />,
+    'Product': <Package className="h-4 w-4" />,
 };
 
 export function TransactionsDataTable({ transactions, customerId, customer, isReadOnly = false }: TransactionsDataTableProps) {

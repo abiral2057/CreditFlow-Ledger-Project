@@ -6,7 +6,7 @@ import type { TransactionWithCustomer } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatAmount } from "@/lib/utils";
-import { User, Calendar as CalendarIcon, FileDown, Coins, CreditCard, Landmark, Banknote } from "lucide-react";
+import { User, Calendar as CalendarIcon, FileDown, Coins, CreditCard, Landmark, Banknote, Package } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -29,6 +29,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
     'Card': <CreditCard className="h-4 w-4 text-muted-foreground" />,
     'Bank Transfer': <Landmark className="h-4 w-4 text-muted-foreground" />,
     'Online Payment': <Banknote className="h-4 w-4 text-muted-foreground" />,
+    'Product': <Package className="h-4 w-4 text-muted-foreground" />,
 };
 
 export function AllTransactionsDataTable({ transactions }: AllTransactionsDataTableProps) {

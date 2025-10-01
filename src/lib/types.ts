@@ -23,7 +23,7 @@ export interface Transaction {
     transaction_type: 'Credit' | 'Debit';
     amount: string;
     transaction_date: string;
-    method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment';
+    method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment' | 'Product';
     notes: string;
     customer_code: string;
   };
