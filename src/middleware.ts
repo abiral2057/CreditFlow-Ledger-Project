@@ -7,6 +7,10 @@ const protectedRoutes = ['/dashboard', '/customers', '/transactions', '/setup-qr
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
+    // Temporarily disabled authentication for development
+    return NextResponse.next();
+
+    /*
     const { pathname } = request.nextUrl;
     
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
@@ -48,6 +52,7 @@ export async function middleware(request: NextRequest) {
 
     // Allow access to all other pages (e.g., /customer-search)
     return NextResponse.next();
+    */
 }
  
 export const config = {
