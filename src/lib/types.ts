@@ -1,7 +1,7 @@
 
 
 export interface Customer {
-  id: number;
+  id: string;
   title: {
     rendered: string;
   };
@@ -15,7 +15,7 @@ export interface Customer {
 }
 
 export interface Transaction {
-  id: number;
+  id: string;
   date: string;
   title: {
       rendered: string;

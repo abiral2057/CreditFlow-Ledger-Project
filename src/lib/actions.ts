@@ -10,12 +10,12 @@ import {
   updateTransaction as apiUpdateTransaction,
   deleteTransaction as apiDeleteTransaction,
   getAllCustomers,
-  getTransactionsForCustomer
 } from './api';
 
 const revalidateAll = () => {
     revalidateTag('customers');
     revalidateTag('transactions');
+    revalidatePath('/', 'layout');
 }
 
 export async function createCustomer(data: { name: string; phone?: string; credit_limit: string; }) {
@@ -33,7 +33,7 @@ export async function createCustomer(data: { name: string; phone?: string; credi
   }
 }
 
-export async function updateCustomer(id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) {
+export async function updateCustomer(id: string, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) {
   try {
     const updatedCustomer = await apiUpdateCustomer(id, data);
     revalidateTag(`customers/${id}`);
@@ -45,11 +45,10 @@ export async function updateCustomer(id: number, data: Partial<{ name: string; c
   }
 }
 
-export async function deleteCustomer(id: number) {
+export async function deleteCustomer(id: string) {
     try {
         // The API's deleteCustomer function will handle cascading deletes of transactions.
         await apiDeleteCustomer(id);
-
         revalidateTag(`customers/${id}`);
         revalidateAll();
     } catch (error) {
@@ -71,7 +70,7 @@ export async function createTransaction(data: { customerId: string, date: string
     }
 }
 
-export async function updateTransaction(transactionId: number, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
+export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; payment_method: 'Cash' | 'Card' | 'Bank Transfer', notes?: string }) {
     try {
       const updatedTransaction = await apiUpdateTransaction(transactionId, { ...data, date: data.date });
       revalidateTag(`transactions-for-${customerId}`);
@@ -83,7 +82,7 @@ export async function updateTransaction(transactionId: number, customerId: strin
     }
 }
 
-export async function deleteTransaction(transactionId: number, customerId: string) {
+export async function deleteTransaction(transactionId: string, customerId: string) {
     try {
         await apiDeleteTransaction(transactionId);
         revalidateTag(`transactions-for-${customerId}`);
@@ -94,7 +93,7 @@ export async function deleteTransaction(transactionId: number, customerId: strin
     }
 }
 
-export async function deleteMultipleTransactions(transactionIds: number[], customerId: string) {
+export async function deleteMultipleTransactions(transactionIds: string[], customerId: string) {
     try {
         await Promise.all(transactionIds.map(id => apiDeleteTransaction(id)));
         revalidateTag(`transactions-for-${customerId}`);

@@ -51,7 +51,7 @@ const paymentMethodIcons: Record<string, React.ReactNode> = {
 };
 
 export function TransactionsDataTable({ transactions, customerId, customer, isReadOnly = false }: TransactionsDataTableProps) {
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
@@ -99,7 +99,7 @@ export function TransactionsDataTable({ transactions, customerId, customer, isRe
         }
     };
 
-    const handleSelectRow = (id: number, checked: boolean) => {
+    const handleSelectRow = (id: string, checked: boolean) => {
         if (checked) {
             setSelectedRows(prev => [...prev, id]);
         } else {

@@ -5,7 +5,6 @@ import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2';
-const WP_REL_API_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v1';
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || 'ayim QJdt HCoF sTuK 7pBJ E58g';
 
@@ -145,9 +144,9 @@ export const createCustomer = async (data: { name: string; customer_code: string
   return response.json();
 };
 
-export const updateCustomer = async (id: number, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
+export const updateCustomer = async (id: string, data: Partial<{ name: string; customer_code: string; phone: string; credit_limit: string; }>) => {
   const headers = getAuthHeaders();
-  const response = await fetch(`${WP_API_URL}/customers/${id}`, {
+  const response = await fetch(`${WP_APIURL}/customers/${id}`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -169,7 +168,7 @@ export const updateCustomer = async (id: number, data: Partial<{ name: string; c
   return response.json();
 }
 
-export const deleteCustomer = async (id: number) => {
+export const deleteCustomer = async (id: string) => {
     const headers = getAuthHeaders();
     // The WordPress backend is set to cascade delete, so deleting the customer
     // will also delete all of its related transaction posts.
@@ -222,7 +221,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: number, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
+export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; payment_method: string; notes: string; }>) {
   const headers = getAuthHeaders();
   
   const body: {meta: any, date?:string} = {
@@ -252,7 +251,7 @@ export async function updateTransaction(transactionId: number, data: Partial<{ d
   return response.json();
 }
 
-export const deleteTransaction = async (transactionId: number) => {
+export const deleteTransaction = async (transactionId: string) => {
     const headers = getAuthHeaders();
     const response = await fetch(`${WP_API_URL}/transactions/${transactionId}?force=true`, {
         method: 'DELETE',

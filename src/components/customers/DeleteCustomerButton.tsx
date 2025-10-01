@@ -19,7 +19,7 @@ import { deleteCustomer } from '@/lib/actions';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type DeleteCustomerButtonProps = {
-  customerId: number;
+  customerId: string;
 };
 
 export function DeleteCustomerButton({ customerId }: DeleteCustomerButtonProps) {

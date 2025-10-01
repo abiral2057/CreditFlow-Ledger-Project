@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -18,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteTransaction } from '@/lib/actions';
 
 type DeleteTransactionButtonProps = {
-  transactionId: number;
+  transactionId: string;
   customerId: string;
 };
 
