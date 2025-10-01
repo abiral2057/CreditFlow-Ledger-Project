@@ -8,6 +8,8 @@ import { AddTransactionForm } from "@/components/transactions/AddTransactionForm
 import { TransactionsDataTable } from "@/components/transactions/TransactionsDataTable";
 import { BackButton } from "@/components/common/BackButton";
 import { PaymentMethodChart } from "@/components/customers/PaymentMethodChart";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function CustomerPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -123,6 +125,15 @@ export default async function CustomerPage({ params }: { params: { id: string } 
           <TransactionsDataTable transactions={transactions} customerId={id} customer={customer} />
         </Card>
       </main>
+
+      {customer.meta.phone && (
+         <Button asChild className="fixed bottom-24 right-6 md:bottom-8 md:right-8 h-16 w-16 rounded-full shadow-lg z-50 animate-in fade-in-0 zoom-in-90 duration-300">
+            <a href={`tel:${customer.meta.phone}`}>
+                <Phone className="h-6 w-6" />
+                <span className="sr-only">Call {customer.meta.name}</span>
+            </a>
+        </Button>
+      )}
     </div>
   );
 }
