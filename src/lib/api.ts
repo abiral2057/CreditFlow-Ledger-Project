@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import 'server-only';
@@ -119,7 +118,6 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   const customerMap = new Map(customers.map(c => [c.id, c]));
 
   // To correctly map transactions to customers, we need the relationship data.
-  // JetEngine doesn't seem to provide a simple way to embed this, so we'll have to rely on a meta field if one exists.
   // The 'related_customer' meta field seems to be the intended link.
   
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
