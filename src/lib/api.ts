@@ -5,7 +5,7 @@ import 'server-only';
 import type { Customer, Transaction, TransactionWithCustomer } from './types';
 
 const WP_API_URL = 'https://demo.leafletdigital.com.np/wp-json/wp/v2/';
-const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/v2/';
+const JET_REL_URL = 'https://demo.leafletdigital.com.np/wp-json/jet-rel/';
 const JET_REL_ID = '22'; // The specific ID for the customer-to-transaction relationship
 
 const WP_APP_USER = process.env.WP_APP_USER || 'admin';
@@ -48,8 +48,7 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    // Use a standard WordPress meta query to fetch transactions for a specific customer
-    const url = `${WP_API_URL}transactions?meta_key=related_customer&meta_value=${customerId}&per_page=100&context=edit`;
+    const url = `${JET_REL_URL}${JET_REL_ID}/children/${customerId}?per_page=100`;
     const response = await fetch(url, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
@@ -194,7 +193,6 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         customer_code: data.customer_code,
-        related_customer: parseInt(data.customerId),
       },
     }),
   });
@@ -207,6 +205,25 @@ export const createTransaction = async (data: { customerId: string; date: string
 
   const newTransaction = await transactionResponse.json() as Transaction;
   
+  // Link transaction to customer using JetEngine relation
+  const relationResponse = await fetch(`${JET_REL_URL}${JET_REL_ID}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+        parent_id: parseInt(data.customerId),
+        child_id: newTransaction.id,
+        context: 'parent', // or 'child' depending on setup, 'parent' seems more logical here.
+        store_items_type: 'update',
+    })
+  });
+
+  if(!relationResponse.ok) {
+    const error = await relationResponse.json();
+    console.error('Failed to create transaction relationship:', error);
+    throw new Error((error as any).message || 'Failed to create transaction relationship');
+  }
+
+
   return newTransaction;
 };
 
