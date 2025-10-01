@@ -48,7 +48,9 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 
 export const getTransactionsForCustomer = async (customerId: string): Promise<Transaction[]> => {
-    const response = await fetch(`${WP_API_URL}transactions?per_page=100&context=edit&parent_id=${customerId}&relation=customer-to-transactions`, {
+    // Correctly query transactions related to a customer via JetEngine relations
+    const url = `${WP_API_URL}transactions?context=edit&per_page=100&jet_rel_query=1&jet_rel_parent_id=${customerId}&jet_rel_relation_id=${JET_REL_ID}`;
+    const response = await fetch(url, {
         headers: getAuthHeaders(),
         next: { tags: ['transactions', `transactions-for-${customerId}`] }
     });
@@ -68,49 +70,44 @@ export const getAllTransactions = async (): Promise<TransactionWithCustomer[]> =
   const headers = getAuthHeaders();
   let customers: Customer[] = [];
   let allTransactions: Transaction[] = [];
+  let relations: { parent_id: number; child_id: number }[] = [];
 
   try {
-    const [customersRes, transactionsRes] = await Promise.all([
+    const [customersRes, transactionsRes, relationsRes] = await Promise.all([
       fetch(`${WP_API_URL}customers?per_page=100&context=edit`, { headers, next: { tags: ['customers'] } }),
       fetch(`${WP_API_URL}transactions?per_page=100&context=edit`, { headers, next: { tags: ['transactions'] } }),
+      fetch(`${JET_REL_URL}${JET_REL_ID}/relations`, { headers, next: { tags: ['transactions'] } }),
     ]);
 
     if (!customersRes.ok) throw new Error('Failed to fetch customers');
     if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
+    if (!relationsRes.ok) throw new Error('Failed to fetch relationships');
 
     customers = await customersRes.json() as Customer[];
     allTransactions = await transactionsRes.json() as Transaction[];
+    relations = await relationsRes.json();
 
   } catch (error) {
       console.error("Error fetching initial data for getAllTransactions", error);
       throw error;
   }
 
-  const customerMap = new Map(customers.map(c => [c.id.toString(), c]));
+  const customerMap = new Map(customers.map(c => [c.id, c]));
+  const transactionToCustomerMap = new Map(relations.map(r => [r.child_id, r.parent_id]));
 
-  // Since we cannot reliably get the parent from the transaction meta anymore,
-  // we would need a more complex query or assume transactions are fetched per customer.
-  // For the "All Transactions" page, we'll need to adjust the expectation or API call.
-  // For now, let's leave this as is, but acknowledge it might not link correctly without a parent ID.
   const transactionsWithCustomer: TransactionWithCustomer[] = allTransactions
     .map(tx => {
-      // The parent ID is no longer in meta, this linking method is now broken.
-      // We'll return null for the customer for now. A better approach would be to 
-      // fetch relationships separately if needed on the all transactions page.
-      const parentId = tx.meta?.related_customer?.toString();
-      if (!parentId) return {...tx, customer: null};
+      const customerId = transactionToCustomerMap.get(tx.id);
+      if (!customerId) return { ...tx, customer: null };
 
-      const customer = customerMap.get(parentId);
-      
-      if (!customer) return {...tx, customer: null};
+      const customer = customerMap.get(customerId);
+      if (!customer) return { ...tx, customer: null };
       
       return {
         ...tx,
         customer: customer,
       };
-    })
-    .filter((tx): tx is TransactionWithCustomer => tx !== null);
-
+    });
 
   return transactionsWithCustomer.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
@@ -202,8 +199,6 @@ export const createTransaction = async (data: { customerId: string; date: string
         method: data.method,
         notes: data.notes || '',
         customer_code: data.customer_code,
-        // The `related_customer` field is removed as per the new API spec.
-        // The relationship will be created via the jet-rel API.
       },
     }),
   });
@@ -240,7 +235,7 @@ export const createTransaction = async (data: { customerId: string; date: string
   return newTransaction;
 };
 
-export async function updateTransaction(transactionId: string, data: Partial<{ date: string; amount: string; transaction_type: string; method: string; notes: string; title: string; customer_code: string; }>) {
+export async function updateTransaction(transactionId: string, customerId: string, data: { date: string, amount: string; transaction_type: 'Credit' | 'Debit'; method: 'Cash' | 'Card' | 'Bank Transfer' | 'Online Payment', notes?: string, title: string, customer_code: string }) {
   const headers = getAuthHeaders();
   
   const body: {meta: any, date?:string, title?: string} = {
